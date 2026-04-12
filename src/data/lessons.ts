@@ -58,7 +58,7 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'DAX والـ Data Model',
     labelSub: 'Data Model & DAX',
     color: 'red',
-    lessonIds: [51, 52, 53, 54, 55],
+    lessonIds: [51, 52, 53, 54, 55, 56, 57, 58],
   },
   {
     id: 'pro',

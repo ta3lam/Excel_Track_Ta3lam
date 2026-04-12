@@ -464,4 +464,347 @@ CALCULATE([Total Sales], TOPN(5, Products, [Total Sales]))`,
       }
     ]
   },
+
+  {
+    id: 56,
+    title: 'Measures vs Calculated Columns',
+    description: 'الفرق الجوهري بين المقاييس والأعمدة المحسوبة في DAX — ومتى تستخدم كلاً منهما',
+    type: 'code',
+    codeLang: 'dax',
+    content: `## الفرق الجوهري
+
+هذا أهم مفهوم يُخطئ فيه المبتدئون في DAX.
+
+| | Calculated Column | Measure |
+|--|-------------------|---------|
+| الحساب | عند تحميل البيانات (مرة واحدة) | عند تحديث التقرير (ديناميكي) |
+| التخزين | في الـ Data Model (يزيد الحجم) | لا تُخزَّن — تُحسَّب عند الطلب |
+| السياق | Row Context (صف بصف) | Filter Context (المرشّحات النشطة) |
+| الاستخدام | بيانات مشتقة ثابتة | مقاييس تتغير بالـ Slicer والـ Filter |
+
+## Calculated Column — العمود المحسوب
+
+\`\`\`dax
+-- يُضاف عمود جديد للجدول
+Profit = Sales[Revenue] - Sales[Cost]
+
+-- يعمل صف بصف تلقائياً
+Full Name = Customers[First Name] & " " & Customers[Last Name]
+
+-- يمكن استخدامه في Slicer وFilter
+Price Category =
+    IF(Products[Price] >= 1000, "High", "Low")
+\`\`\`
+
+## Measure — المقياس
+
+\`\`\`dax
+-- يتغير حسب السياق (الفلاتر النشطة)
+Total Sales = SUM(Sales[Revenue])
+
+-- لا يمكن كتابة Sales[Revenue] مباشرةً
+-- لأن المقياس لا يعمل صف بصف
+\`\`\`
+
+## متى تستخدم أياً منهما؟
+
+### استخدم Calculated Column إذا:
+- تريد تصنيف البيانات (A/B/C، High/Medium/Low)
+- تريد ربط جدولَين بعمود مشتق
+- القيمة لا تتغير بالفلاتر (عمر العميل، فئة المنتج)
+
+### استخدم Measure إذا:
+- تريد مجموعاً أو متوسطاً أو نسبة
+- النتيجة تتغير حسب الـ Slicer والفلاتر
+- تريد مقارنة فترات (YoY, MoM)
+
+## الخطأ الأكثر شيوعاً
+
+\`\`\`dax
+-- ❌ خطأ: لا يمكن استخدام عمود مباشرةً في Measure
+Wrong Measure = Sales[Revenue] - Sales[Cost]
+
+-- ✅ صحيح
+Correct Measure = SUM(Sales[Revenue]) - SUM(Sales[Cost])
+\`\`\`
+
+## Implicit vs Explicit Measures
+
+\`\`\`dax
+-- Implicit: تسحب العمود لـ Values في Pivot → Excel يعمل SUM تلقائياً
+-- مشكلته: لا يمكن التحكم في الحساب
+
+-- Explicit: تكتب المقياس بنفسك
+Total Revenue = SUM(Sales[Revenue])
+-- أفضل: تحكم كامل + يمكن الإشارة إليه من مقاييس أخرى
+\`\`\`
+
+> 💡 **القاعدة الذهبية:** إذا كانت النتيجة تتغير بناءً على ما تختاره في التقرير → استخدم Measure.`,
+    example: `-- Calculated Column
+Profit Margin % = DIVIDE(Sales[Profit], Sales[Revenue])
+
+-- Measure
+Avg Profit Margin = AVERAGE(Sales[Profit Margin %])`,
+    exercises: [
+      {
+        id: 70,
+        type: 'mcq',
+        question: 'تريد إضافة عمود "تصنيف العميل" (Gold/Silver/Bronze) بناءً على إجمالي مشترياته. أي نوع تستخدم؟',
+        hint: 'القيمة ثابتة لكل عميل ولا تتغير بالفلاتر',
+        options: ['Measure', 'Calculated Column', 'Row-Level Security', 'KPI'],
+        correctIndex: 1,
+      },
+      {
+        id: 71,
+        type: 'mcq',
+        question: 'تريد مقياساً يعرض إجمالي المبيعات ويتغير تلقائياً عند اختيار منطقة من الـ Slicer. أي نوع؟',
+        hint: 'النتيجة تتغير ديناميكياً بالفلاتر',
+        options: ['Calculated Column', 'Measure', 'Calculated Table', 'Named Set'],
+        correctIndex: 1,
+      },
+      {
+        id: 72,
+        type: 'mcq',
+        question: 'ما الفرق في "التخزين" بين Calculated Column وMeasure؟',
+        hint: 'فكّر في تأثير كلٍّ منهما على حجم ملف Power Pivot',
+        options: [
+          'كلاهما لا يُخزَّنان',
+          'Calculated Column تُخزَّن في الـ Model وتزيد الحجم، Measure تُحسَّب عند الطلب',
+          'Measure تُخزَّن، Calculated Column تُحسَّب',
+          'لا فرق في التخزين'
+        ],
+        correctIndex: 1,
+      }
+    ]
+  },
+
+  {
+    id: 57,
+    title: 'ALL و ALLEXCEPT — التحكم في الفلاتر',
+    description: 'إزالة الفلاتر كلها أو جزء منها لحساب نسب ومقارنات احترافية',
+    type: 'code',
+    codeLang: 'dax',
+    content: `## مشكلة Filter Context
+
+في DAX، كل مقياس يُحسَّب ضمن فلاتر الـ Pivot. أحياناً تريد **تجاهل** بعض هذه الفلاتر.
+
+## ALL — إزالة جميع الفلاتر
+
+\`\`\`dax
+All Products Sales = CALCULATE(SUM(Sales[Revenue]), ALL(Products))
+\`\`\`
+
+هذا المقياس يُرجع إجمالي المبيعات لجميع المنتجات **بغض النظر** عن أي فلتر على جدول Products.
+
+### حساب نسبة المبيعات من الإجمالي
+
+\`\`\`dax
+% of Total =
+DIVIDE(
+    SUM(Sales[Revenue]),
+    CALCULATE(SUM(Sales[Revenue]), ALL(Sales))
+)
+\`\`\`
+
+**النتيجة:** لكل منتج، يظهر نسبته من إجمالي المبيعات الكلي.
+
+### ALL على جدول كامل vs عمود محدد
+
+\`\`\`dax
+-- يزيل كل فلاتر الجدول
+CALCULATE([Total Sales], ALL(Sales))
+
+-- يزيل فلتر عمود محدد فقط
+CALCULATE([Total Sales], ALL(Sales[Region]))
+\`\`\`
+
+## ALLEXCEPT — إزالة كل الفلاتر إلا عمود معين
+
+\`\`\`dax
+ALLEXCEPT(table, column1, column2, ...)
+\`\`\`
+
+\`\`\`dax
+% of Category =
+DIVIDE(
+    SUM(Sales[Revenue]),
+    CALCULATE(
+        SUM(Sales[Revenue]),
+        ALLEXCEPT(Products, Products[Category])
+    )
+)
+\`\`\`
+
+**النتيجة:** نسبة كل منتج من إجمالي فئته — الفلتر على Category يبقى، باقي الفلاتر تُزال.
+
+## ALLSELECTED — مراعاة الفلاتر الخارجية فقط
+
+\`\`\`dax
+% of Visible Total =
+DIVIDE(
+    SUM(Sales[Revenue]),
+    CALCULATE(SUM(Sales[Revenue]), ALLSELECTED())
+)
+\`\`\`
+
+يحسب النسبة من المجموع المرئي (بعد تطبيق الـ Slicer) لا من الكل.
+
+## مثال شامل: تقرير أداء المناطق
+
+\`\`\`dax
+Region Sales = SUM(Sales[Revenue])
+
+Total Sales = CALCULATE(SUM(Sales[Revenue]), ALL(Sales))
+
+Region % =
+VAR RegionSales = [Region Sales]
+VAR TotalSales = [Total Sales]
+RETURN
+    DIVIDE(RegionSales, TotalSales, 0)
+\`\`\`
+
+> 💡 ALL وأخواتها من أكثر الدوال استخداماً في DAX — بدونها لا يمكن حساب نسب أو مقارنات صحيحة.`,
+    example: `-- نسبة كل منتج من الإجمالي
+% of Total =
+DIVIDE(
+    SUM(Sales[Revenue]),
+    CALCULATE(SUM(Sales[Revenue]), ALL(Sales))
+)`,
+    exercises: [
+      {
+        id: 73,
+        type: 'mcq',
+        question: 'تريد مقياساً يعرض نسبة مبيعات كل منتج من إجمالي المبيعات الكلي (بغض النظر عن أي فلتر). أي دالة تستخدم لإزالة الفلاتر؟',
+        hint: 'تريد إزالة جميع الفلاتر عن جدول المبيعات',
+        options: ['REMOVEFILTERS', 'ALL', 'FILTER', 'ALLSELECTED'],
+        correctIndex: 1,
+      },
+      {
+        id: 74,
+        type: 'mcq',
+        question: 'ما الفرق بين ALL وALLSELECTED؟',
+        hint: 'فكّر في الـ Slicer — هل يؤثر على كل منهما؟',
+        options: [
+          'لا فرق — كلاهما يزيل جميع الفلاتر',
+          'ALL يزيل كل الفلاتر بما فيها الـ Slicer، ALLSELECTED يحترم الـ Slicer',
+          'ALLSELECTED أسرع في الأداء',
+          'ALL للجداول فقط، ALLSELECTED للأعمدة فقط'
+        ],
+        correctIndex: 1,
+      }
+    ]
+  },
+
+  {
+    id: 58,
+    title: 'VAR و RETURN — متغيرات DAX',
+    description: 'استخدام المتغيرات لكتابة DAX أنظف وأسرع وأسهل في الفهم',
+    type: 'code',
+    codeLang: 'dax',
+    content: `## لماذا VAR/RETURN؟
+
+قبل VAR، كانت الصيغ المعقدة تتطلب تكرار نفس الحسابات:
+
+\`\`\`dax
+-- ❌ بدون VAR — تكرار وبطء
+YoY Growth % =
+DIVIDE(
+    SUM(Sales[Revenue]) - CALCULATE(SUM(Sales[Revenue]), SAMEPERIODLASTYEAR(Dates[Date])),
+    CALCULATE(SUM(Sales[Revenue]), SAMEPERIODLASTYEAR(Dates[Date]))
+)
+\`\`\`
+
+\`\`\`dax
+-- ✅ مع VAR — واضح وأسرع
+YoY Growth % =
+VAR CurrentSales = SUM(Sales[Revenue])
+VAR PrevYearSales = CALCULATE(SUM(Sales[Revenue]), SAMEPERIODLASTYEAR(Dates[Date]))
+RETURN
+    DIVIDE(CurrentSales - PrevYearSales, PrevYearSales)
+\`\`\`
+
+## بناء جملة VAR
+
+\`\`\`dax
+MeasureName =
+VAR VariableName1 = expression1
+VAR VariableName2 = expression2
+RETURN
+    result_expression
+\`\`\`
+
+## أمثلة عملية
+
+### حساب تصنيف الأداء
+\`\`\`dax
+Performance Label =
+VAR Sales = SUM(Sales[Revenue])
+VAR Target = SUM(Targets[Amount])
+VAR Achievement = DIVIDE(Sales, Target, 0)
+RETURN
+    IF(Achievement >= 1, "✅ تجاوز الهدف",
+    IF(Achievement >= 0.8, "⚡ قريب من الهدف",
+    "❌ تحت الهدف"))
+\`\`\`
+
+### تجنب القسمة على صفر بأناقة
+\`\`\`dax
+Profit Margin =
+VAR Revenue = SUM(Sales[Revenue])
+VAR Profit = SUM(Sales[Profit])
+RETURN
+    IF(Revenue = 0, BLANK(), DIVIDE(Profit, Revenue))
+\`\`\`
+
+### متغير جدول (Table Variable)
+\`\`\`dax
+Top 3 Customers =
+VAR TopCustomers =
+    TOPN(3, Customers, [Total Sales], DESC)
+RETURN
+    CALCULATE([Total Sales], TopCustomers)
+\`\`\`
+
+## قواعد مهمة
+
+1. **VAR تُقيَّم مرة واحدة** — ليست lazy evaluation. يُحسَّب المتغير عند تعريفه.
+2. **المتغيرات لا تتأثر بالـ Filter Context** اللاحق داخل CALCULATE.
+3. يمكن تعريف متغير **جدول** أو **scalar** أو **column**.
+
+\`\`\`dax
+-- ✅ صحيح
+VAR x = 10
+VAR y = x * 2   -- يستطيع استخدام المتغير السابق
+RETURN x + y    -- 30
+\`\`\`
+
+> 💡 استخدم VAR دائماً في أي صيغة تتجاوز سطرَين — ستحسّن الأداء وتسهّل القراءة والـ debugging.`,
+    example: `Sales vs Target =
+VAR CurrentSales = SUM(Sales[Revenue])
+VAR Target = SUM(Targets[Amount])
+RETURN DIVIDE(CurrentSales, Target, 0)`,
+    exercises: [
+      {
+        id: 75,
+        type: 'mcq',
+        question: 'ما الفائدة الرئيسية من استخدام VAR في DAX؟',
+        hint: 'فكّر في الأداء وقابلية القراءة',
+        options: [
+          'تمكّن من استخدام Python داخل DAX',
+          'تتجنب تكرار الحسابات وتجعل الكود أوضح وأسرع',
+          'ضرورية لدوال Time Intelligence فقط',
+          'تسمح بتعريف أعمدة جديدة'
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 76,
+        type: 'mcq',
+        question: 'ما الكلمة التي تأتي بعد تعريف المتغيرات في DAX للإشارة إلى النتيجة النهائية؟',
+        hint: 'البنية: VAR x = ... ثم ...',
+        options: ['OUTPUT', 'RESULT', 'RETURN', 'END'],
+        correctIndex: 2,
+      }
+    ]
+  },
 ];
