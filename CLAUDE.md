@@ -51,16 +51,16 @@ Three types defined in `src/types/index.ts`:
 ### Lesson Data Structure
 
 Files in `src/data/`:
-- `lessons_zero.ts` — IDs 1–8 (تحت الصفر)
-- `lessons_beginner.ts` — IDs 11–16 (الأساسيات)
-- `lessons_lookup.ts` — IDs 21–25 (البحث والمرجع)
-- `lessons_advanced.ts` — IDs 31–34 (المتقدم)
-- `lessons_powerquery.ts` — IDs 41–44 (Power Query)
-- `lessons_expert.ts` — IDs 51–55 (DAX والـ Data Model)
-- `lessons_pro.ts` — IDs 61–64 (الاحتراف)
+- `lessons_zero.ts` — IDs 1–8 (تحت الصفر): أساسيات Excel، اختصارات لوحة المفاتيح، تنسيق الخلايا، Named Ranges
+- `lessons_beginner.ts` — IDs 11–19 (الأساسيات): SUM/AVERAGE، MAX/MIN/ROUND، دوال النصوص، IF/AND/OR، دوال التاريخ، IFERROR، ABS/MOD/CEILING
+- `lessons_lookup.ts` — IDs 21–27 (البحث والمرجع): VLOOKUP، INDEX/MATCH، XLOOKUP، SUMIF/COUNTIFS، OFFSET/INDIRECT، CHOOSE
+- `lessons_advanced.ts` — IDs 31–37 (المتقدم): Pivot Tables، Charts، Data Validation، Dynamic Arrays، What-If Analysis، Array Formulas
+- `lessons_powerquery.ts` — IDs 41–46 (Power Query): مقدمة PQ، التحويلات، لغة M، Append/Merge، Pivot/Unpivot، Group By
+- `lessons_expert.ts` — IDs 51–58 (DAX والـ Data Model): Data Model، DAX، CALCULATE، Time Intelligence، RANKX، Measures vs Columns، ALL/ALLEXCEPT، VAR/RETURN
+- `lessons_pro.ts` — IDs 61–66 (الاحتراف): VBA مقدمة، VBA أساسيات، الحلقات والأحداث، الشهادات، UserForms، UDFs
 - `lessons.ts` — aggregator: exports `allLessons`, `LEVEL_GROUPS`, `LEVEL_COLORS`
 
-**Total lessons: 36** (as of last update)
+**Total lessons: 50** (as of last update)
 
 When adding new lessons, update both the lesson file AND the `lessonIds` array in the corresponding `LEVEL_GROUPS` entry in `lessons.ts`.
 
