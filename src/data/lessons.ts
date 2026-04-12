@@ -44,7 +44,7 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'المستوى المتقدم',
     labelSub: 'Advanced Excel',
     color: 'violet',
-    lessonIds: [31, 32, 33, 34],
+    lessonIds: [31, 32, 33, 34, 35, 36, 37],
   },
   {
     id: 'powerquery',

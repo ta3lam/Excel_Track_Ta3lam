@@ -321,4 +321,357 @@ Start date: =TODAY()
       }
     ]
   },
+
+  {
+    id: 35,
+    title: 'Dynamic Arrays — FILTER, SORT, UNIQUE, SEQUENCE',
+    description: 'دوال الـ Dynamic Arrays في Excel 365 التي تغيّر طريقة التعامل مع البيانات كلياً',
+    type: 'formula',
+    content: `## ما هي Dynamic Arrays؟
+
+من أهم تحديثات Excel 365 — دوال تُرجع **مصفوفة نتائج** تمتد تلقائياً في الخلايا المجاورة بدون Ctrl+Shift+Enter.
+
+## FILTER — فلترة ببيانات ديناميكية
+
+\`\`\`excel
+=FILTER(array, include, [if_empty])
+\`\`\`
+
+\`\`\`excel
+=FILTER(A2:C10, B2:B10="مبيعات")
+\`\`\`
+يُرجع كل الصفوف التي عمود B فيها = "مبيعات".
+
+### فلتر بشروط متعددة
+\`\`\`excel
+=FILTER(A2:C10, (B2:B10="مبيعات") * (C2:C10>5000))
+\`\`\`
+`*` = AND، `+` = OR في الـ arrays.
+
+### مع رسالة إذا لم توجد نتائج
+\`\`\`excel
+=FILTER(A2:C10, B2:B10="مبيعات", "لا توجد نتائج")
+\`\`\`
+
+## SORT — ترتيب ديناميكي
+
+\`\`\`excel
+=SORT(array, [sort_index], [sort_order], [by_col])
+\`\`\`
+
+\`\`\`excel
+=SORT(A2:B10, 2, -1)   → ترتيب تنازلي حسب العمود الثاني
+=SORT(A2:B10, 2, 1)    → ترتيب تصاعدي
+\`\`\`
+
+### SORTBY — ترتيب بعمود خارج النطاق
+\`\`\`excel
+=SORTBY(A2:B10, C2:C10, -1)   → ترتيب A:B بناءً على C تنازلياً
+\`\`\`
+
+## UNIQUE — القيم الفريدة فقط
+
+\`\`\`excel
+=UNIQUE(A2:A20)                → قائمة بدون تكرار
+=UNIQUE(A2:A20, FALSE, TRUE)   → القيم التي تظهر مرة واحدة فقط
+\`\`\`
+
+## SEQUENCE — توليد تسلسل أرقام
+
+\`\`\`excel
+=SEQUENCE(rows, [cols], [start], [step])
+\`\`\`
+
+\`\`\`excel
+=SEQUENCE(5)           → {1;2;3;4;5}
+=SEQUENCE(3, 4)        → مصفوفة 3×4
+=SEQUENCE(12, 1, 1, 1) → أرقام 1 لـ 12
+\`\`\`
+
+### تطبيق: إنشاء تقويم شهري
+\`\`\`excel
+=SEQUENCE(6, 7, DATE(2024,1,1) - WEEKDAY(DATE(2024,1,1),2) + 1)
+\`\`\`
+
+## دمج الدوال
+
+\`\`\`excel
+=SORT(UNIQUE(A2:A100))   → قائمة مرتبة بدون تكرار
+
+=SORT(
+  FILTER(A2:C50, C2:C50 > AVERAGE(C2:C50)),
+  3, -1
+)
+→ المنتجات التي تفوق المتوسط، مرتبة تنازلياً
+\`\`\`
+
+## SPILL — ميزة التسريب التلقائي
+
+النتائج "تسرّب" تلقائياً في الخلايا التالية. إذا كانت الخلايا محجوبة، تظهر #SPILL!
+
+\`\`\`excel
+=A1#    ← يشير إلى كل نطاق الـ spill الناتج من A1
+\`\`\`
+
+> 💡 هذه الدوال تتطلب **Excel 365** أو **Excel 2021**. في الإصدارات الأقدم استخدم Power Query لنفس النتائج.`,
+    example: '=UNIQUE(A2:A5)',
+    sheet: {
+      headers: ['القسم', 'المبيعات'],
+      rows: [
+        ['مبيعات', 8000],
+        ['تسويق', 3000],
+        ['مبيعات', 6000],
+        ['عمليات', 4000],
+      ],
+    },
+    exercises: [
+      {
+        id: 50,
+        type: 'mcq',
+        question: 'تريد فلترة الصفوف التي مبيعاتها أكثر من 5000. أي صيغة صحيحة؟',
+        hint: 'الشرط في المعامل الثاني من FILTER',
+        options: [
+          '=FILTER(A2:B5, ">5000")',
+          '=FILTER(A2:B5, B2:B5>5000)',
+          '=FILTER(B2:B5>5000, A2:B5)',
+          '=FILTERIF(A2:B5, B2:B5, ">5000")'
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 51,
+        type: 'mcq',
+        question: 'ما الدالة التي تُرجع قائمة بدون قيم مكررة؟',
+        hint: 'اسمها يدل على المعنى مباشرةً',
+        options: ['DISTINCT', 'UNIQUE', 'NODUPS', 'REMOVE_DUPS'],
+        correctIndex: 1,
+      },
+      {
+        id: 52,
+        type: 'mcq',
+        question: 'في FILTER، كيف تدمج شرطين بـ AND؟',
+        hint: 'في Arrays، العمليات المنطقية تختلف عن AND() العادية',
+        options: [
+          'FILTER(array, AND(cond1, cond2))',
+          'FILTER(array, cond1 * cond2)',
+          'FILTER(array, cond1 + cond2)',
+          'FILTER(array, cond1, cond2)'
+        ],
+        correctIndex: 1,
+      }
+    ]
+  },
+
+  {
+    id: 36,
+    title: 'What-If Analysis — تحليل السيناريوهات',
+    description: 'Goal Seek و Scenario Manager و Data Tables لاتخاذ قرارات مدروسة',
+    type: 'concept',
+    content: `## ما هو What-If Analysis؟
+
+أدوات تساعدك على الإجابة على سؤال: "**ماذا سيحدث لو...؟**"
+
+Data → What-If Analysis
+
+## Goal Seek — العمل بالهدف
+
+"أريد الوصول إلى نتيجة معينة — ما القيمة المطلوبة؟"
+
+### مثال: قرض شهري
+- لديك قرض 100,000 جنيه بفائدة 12% سنوياً
+- تريد أن يكون القسط الشهري **لا يتجاوز 2,500 جنيه**
+- الصيغة: \`=PMT(12%/12, B3, -100000)\`
+
+\`\`\`
+Data → What-If Analysis → Goal Seek
+Set cell: خلية الصيغة (القسط)
+To value: 2500
+By changing cell: خلية عدد الأشهر
+\`\`\`
+
+### مثال: نقطة التعادل
+- إيرادات = التكلفة الثابتة + (التكلفة المتغيرة × الكمية)
+- "كم وحدة تحتاج لتحقيق ربح = 0؟"
+
+## Scenario Manager — مقارنة السيناريوهات
+
+مقارنة "الحالة المتفائلة" vs "الحالة المتشائمة" vs "الحالة المعتدلة":
+
+\`\`\`
+Data → What-If Analysis → Scenario Manager
+Add → اسم السيناريو + الخلايا المتغيرة + قيمها
+\`\`\`
+
+ثم "Summary" لإنشاء تقرير مقارنة تلقائي.
+
+### مثال: تأثير نسبة النمو على الإيراد
+
+| السيناريو | نسبة النمو | الإيراد المتوقع |
+|-----------|-----------|----------------|
+| متفائل | 20% | 1,200,000 |
+| معتدل | 10% | 1,100,000 |
+| متشائم | -5% | 950,000 |
+
+## Data Tables — تحليل متغير أو متغيرَين
+
+### جدول بمتغير واحد (One-Variable)
+اختبر تأثير قيم مختلفة لمتغير واحد على النتيجة:
+
+\`\`\`
+ضع الصيغة في رأس الجدول
+ضع القيم المحتملة في عمود
+Data → What-If Analysis → Data Table
+Column input cell: الخلية المتغيرة
+\`\`\`
+
+### جدول بمتغيرَين (Two-Variable)
+اختبر تأثير متغيرَين في آنٍ واحد — مثل أسعار × كميات:
+
+| | 100 | 200 | 300 |  ← كميات |
+|--|-----|-----|-----|
+| 10 | 1000 | 2000 | 3000 |  ← أسعار |
+| 15 | 1500 | 3000 | 4500 |
+| 20 | 2000 | 4000 | 6000 |
+
+## Solver — تحسين متعدد المتغيرات
+
+أداة أقوى من Goal Seek تتعامل مع عدة متغيرات وقيود:
+\`\`\`
+Data → Solver
+Objective: تعظيم الربح
+Variables: الكميات المنتجة
+Constraints: لا تتجاوز الطاقة الإنتاجية
+\`\`\`
+
+> 💡 Solver يحتاج تفعيله: File → Options → Add-ins → Solver Add-in.`,
+    exercises: [
+      {
+        id: 53,
+        type: 'mcq',
+        question: 'أي أداة تستخدم لمعرفة "كم وحدة تحتاج لتحقيق ربح 50,000 جنيه"؟',
+        hint: 'تريد تحديد قيمة هدف معينة',
+        options: ['Scenario Manager', 'Data Table', 'Goal Seek', 'Solver'],
+        correctIndex: 2,
+      },
+      {
+        id: 54,
+        type: 'mcq',
+        question: 'ما الأداة المناسبة لمقارنة 3 سيناريوهات (متفائل، معتدل، متشائم) وإنشاء تقرير تلقائي؟',
+        hint: 'اسمها يدل مباشرةً على إدارة السيناريوهات',
+        options: ['Goal Seek', 'Scenario Manager', 'Data Table', 'Solver'],
+        correctIndex: 1,
+      },
+      {
+        id: 55,
+        type: 'mcq',
+        question: 'ما الفرق بين Goal Seek و Solver؟',
+        hint: 'فكّر في عدد المتغيرات التي تتعامل معها كل منهما',
+        options: [
+          'لا فرق — كلاهما متطابق',
+          'Goal Seek متغير واحد بلا قيود، Solver متغيرات متعددة مع قيود',
+          'Solver فقط للأعداد الصحيحة',
+          'Goal Seek أقوى وأكثر تعقيداً'
+        ],
+        correctIndex: 1,
+      }
+    ]
+  },
+
+  {
+    id: 37,
+    title: 'Array Formulas — صيغ المصفوفات',
+    description: 'صيغ تعمل على نطاقات كاملة في آنٍ واحد لحل مسائل معقدة',
+    type: 'formula',
+    content: `## ما هي Array Formulas؟
+
+صيغة عادية تعمل على خلية واحدة. Array Formula تعمل على **نطاق كامل** في خطوة واحدة.
+
+## الطريقة القديمة: Ctrl + Shift + Enter
+
+في Excel 2019 والأقدم، تدخل الصيغة وتضغط **Ctrl+Shift+Enter** بدلاً من Enter فقط. تظهر بين أقواس متعرجة:
+\`\`\`excel
+{=SUM(IF(A2:A10="مبيعات", B2:B10, 0))}
+\`\`\`
+
+## الطريقة الحديثة: Dynamic Arrays (Excel 365)
+
+في Excel 365، معظم الصيغ أصبحت تعمل كـ arrays تلقائياً.
+
+## تطبيقات عملية
+
+### جمع بشرط (بديل SUMIF بدون دالة)
+\`\`\`excel
+{=SUM(IF(A2:A10="مبيعات", B2:B10, 0))}
+\`\`\`
+
+### عدد القيم الفريدة
+\`\`\`excel
+{=SUM(1/COUNTIF(A2:A10, A2:A10))}
+\`\`\`
+كيف تعمل: COUNTIF يحسب كم مرة ظهرت كل قيمة، ثم 1/عدد_المرات = حصة كل قيمة فريدة.
+
+### أكبر قيمة بشرط
+\`\`\`excel
+{=MAX(IF(A2:A10="مبيعات", B2:B10))}
+\`\`\`
+
+### SUMPRODUCT كبديل لـ Array Formula
+SUMPRODUCT تعمل بدون Ctrl+Shift+Enter:
+\`\`\`excel
+=SUMPRODUCT((A2:A10="مبيعات") * B2:B10)
+\`\`\`
+
+### ترتيب بدون تكرار
+\`\`\`excel
+{=IFERROR(INDEX($A$2:$A$10, MATCH(ROWS($A$2:A2), COUNTIF($A$2:$A$10,"<="&$A$2:$A$10), 0)),"")}
+\`\`\`
+
+## متى تستخدم Array Formulas؟
+
+| المشكلة | الحل |
+|---------|------|
+| SUMIF بشرط نصي معقد | Array SUM+IF |
+| عدد القيم الفريدة | SUM(1/COUNTIF) |
+| MAX/MIN بشرط | MAX/MIN(IF) |
+| Excel 365 | استخدم FILTER, UNIQUE بدلاً منها |
+
+> ⚠️ **تحذير:** Array Formulas الكبيرة تبطئ الملف. في Excel 365 استخدم Dynamic Arrays أو SUMPRODUCT كلما أمكن.`,
+    example: '=SUM(IF(A2:A4="مبيعات",B2:B4,0))',
+    sheet: {
+      headers: ['القسم', 'المبيعات'],
+      rows: [
+        ['مبيعات', 8000],
+        ['تسويق', 3000],
+        ['مبيعات', 6000],
+      ],
+    },
+    exercises: [
+      {
+        id: 56,
+        type: 'mcq',
+        question: 'ما الاختصار لإدخال Array Formula في Excel 2019؟',
+        hint: 'ثلاثة مفاتيح معاً بدلاً من Enter فقط',
+        options: [
+          'Alt + Enter',
+          'Ctrl + Shift + Enter',
+          'Shift + Enter',
+          'Ctrl + Alt + Enter'
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 57,
+        type: 'mcq',
+        question: 'ما الصيغة التي تحسب عدد القيم الفريدة في A2:A10 بدون دالة UNIQUE؟',
+        hint: 'كل قيمة فريدة تساهم بـ 1/عدد_تكرارها',
+        options: [
+          '=COUNTUNIQUE(A2:A10)',
+          '{=SUM(1/COUNTIF(A2:A10,A2:A10))}',
+          '=COUNT(UNIQUE(A2:A10))',
+          '{=SUMIF(A2:A10,"<>",1)}'
+        ],
+        correctIndex: 1,
+      }
+    ]
+  },
 ];
