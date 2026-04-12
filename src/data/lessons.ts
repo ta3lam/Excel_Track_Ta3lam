@@ -37,7 +37,7 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'البحث والمرجع',
     labelSub: 'Lookup & Reference',
     color: 'blue',
-    lessonIds: [21, 22, 23, 24, 25],
+    lessonIds: [21, 22, 23, 24, 25, 26, 27],
   },
   {
     id: 'advanced',
