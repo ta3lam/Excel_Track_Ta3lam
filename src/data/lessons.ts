@@ -65,7 +65,7 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'الاحتراف',
     labelSub: 'VBA & Certification',
     color: 'amber',
-    lessonIds: [61, 62, 63, 64],
+    lessonIds: [61, 62, 63, 64, 65, 66],
   },
 ];
 

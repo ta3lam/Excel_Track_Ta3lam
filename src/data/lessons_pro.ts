@@ -401,4 +401,305 @@ Excel + DAX + Power Query  →  Power BI Desktop  →  PL-300 Cert
       }
     ]
   },
+
+  {
+    id: 65,
+    title: 'VBA — UserForms وواجهات المستخدم',
+    description: 'بناء نماذج إدخال احترافية بـ UserForm لجمع البيانات بشكل آمن وسهل',
+    type: 'code',
+    codeLang: 'vba',
+    content: `## ما هو UserForm؟
+
+UserForm هو نافذة مخصصة تبنيها بنفسك بداخل Excel — مثل نموذج إدخال بيانات احترافي.
+
+## إنشاء UserForm
+
+\`\`\`
+VBA Editor (Alt+F11) → Insert → UserForm
+\`\`\`
+
+تظهر نافذة التصميم وشريط أدوات Toolbox.
+
+## أدوات Toolbox الأساسية
+
+| الأداة | الاستخدام |
+|--------|-----------|
+| TextBox | حقل إدخال نص |
+| Label | نص توضيحي ثابت |
+| ComboBox | قائمة منسدلة |
+| ListBox | قائمة اختيار |
+| CheckBox | خانة اختيار |
+| OptionButton | زر اختيار (Radio) |
+| CommandButton | زر أمر |
+
+## مثال: نموذج إدخال موظف
+
+\`\`\`vba
+' كود زر "حفظ"
+Private Sub btnSave_Click()
+    ' التحقق من البيانات
+    If txtName.Value = "" Then
+        MsgBox "أدخل الاسم أولاً", vbExclamation
+        txtName.SetFocus
+        Exit Sub
+    End If
+
+    If Not IsNumeric(txtSalary.Value) Then
+        MsgBox "الراتب يجب أن يكون رقماً", vbExclamation
+        Exit Sub
+    End If
+
+    ' إيجاد أول صف فارغ
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("الموظفون")
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row + 1
+
+    ' حفظ البيانات
+    ws.Cells(lastRow, 1).Value = txtName.Value
+    ws.Cells(lastRow, 2).Value = cmbDept.Value
+    ws.Cells(lastRow, 3).Value = CDbl(txtSalary.Value)
+    ws.Cells(lastRow, 4).Value = Now()
+
+    ' إعادة تعيين النموذج
+    Call ClearForm
+    MsgBox "تم حفظ البيانات بنجاح ✅", vbInformation
+End Sub
+
+Private Sub ClearForm()
+    txtName.Value = ""
+    txtSalary.Value = ""
+    cmbDept.ListIndex = -1
+End Sub
+
+Private Sub btnCancel_Click()
+    Unload Me   ' إغلاق النموذج
+End Sub
+\`\`\`
+
+## تحميل الـ ComboBox من نطاق
+
+\`\`\`vba
+Private Sub UserForm_Initialize()
+    ' تحميل قائمة الأقسام
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("الأقسام")
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+
+    cmbDept.RowSource = "الأقسام!A2:A" & lastRow
+
+    ' قيمة افتراضية للتاريخ
+    txtDate.Value = Format(Now(), "dd/mm/yyyy")
+End Sub
+\`\`\`
+
+## فتح UserForm من زر في الورقة
+
+\`\`\`vba
+Sub ShowEmployeeForm()
+    frmEmployee.Show
+End Sub
+\`\`\`
+
+## نصائح احترافية
+
+\`\`\`vba
+' جعل النموذج يفتح في منتصف الشاشة
+Private Sub UserForm_Initialize()
+    Me.StartUpPosition = 2  ' Center Screen
+End Sub
+
+' منع إغلاق النموذج بالـ X
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    If CloseMode = vbFormControlMenu Then
+        Cancel = True
+        MsgBox "استخدم زر الإلغاء"
+    End If
+End Sub
+\`\`\`
+
+> 💡 UserForms أفضل من الإدخال المباشر في الخلايا لأنها تتيح التحقق من البيانات قبل حفظها.`,
+    exercises: [
+      {
+        id: 80,
+        type: 'mcq',
+        question: 'ما الحدث الذي يُنفَّذ عند فتح UserForm لأول مرة؟',
+        hint: 'يستخدم لتحميل البيانات الافتراضية والقوائم',
+        options: ['UserForm_Open', 'UserForm_Load', 'UserForm_Initialize', 'UserForm_Start'],
+        correctIndex: 2,
+      },
+      {
+        id: 81,
+        type: 'mcq',
+        question: 'ما الكود الصحيح لإغلاق UserForm؟',
+        hint: 'يُزيل النموذج من الذاكرة',
+        options: ['Me.Close', 'UserForm.Exit', 'Unload Me', 'Me.Hide'],
+        correctIndex: 2,
+      },
+      {
+        id: 82,
+        type: 'mcq',
+        question: 'أيٌّ من أدوات Toolbox مناسب لقائمة اختيار منسدلة؟',
+        hint: 'تريد عرض خيارات ويختار المستخدم واحداً منها',
+        options: ['TextBox', 'Label', 'ComboBox', 'CheckBox'],
+        correctIndex: 2,
+      }
+    ]
+  },
+
+  {
+    id: 66,
+    title: 'VBA — Custom Functions (UDFs)',
+    description: 'بناء دوال Excel مخصصة بـ VBA تستخدمها مثل SUM وVLOOKUP تماماً',
+    type: 'code',
+    codeLang: 'vba',
+    content: `## ما هي UDF؟
+
+**User Defined Function** — دالة تكتبها أنت بـ VBA وتستخدمها في خلايا Excel مثل أي دالة عادية:
+\`\`\`excel
+=MyFunction(A1, B1)
+\`\`\`
+
+## بناء أول UDF
+
+\`\`\`vba
+' دالة تحوّل الدرجة إلى تقدير
+Function Grade(score As Double) As String
+    If score >= 90 Then
+        Grade = "ممتاز"
+    ElseIf score >= 75 Then
+        Grade = "جيد جداً"
+    ElseIf score >= 60 Then
+        Grade = "جيد"
+    Else
+        Grade = "راسب"
+    End If
+End Function
+\`\`\`
+
+الاستخدام في Excel:
+\`\`\`excel
+=Grade(85)   → "جيد جداً"
+=Grade(A2)   → حسب قيمة A2
+\`\`\`
+
+## UDF تعمل على نطاق
+
+\`\`\`vba
+' تجمع فقط الخلايا الملوّنة
+Function SumByColor(rngSum As Range, rngColor As Range) As Double
+    Dim cell As Range
+    Dim targetColor As Long
+    targetColor = rngColor.Interior.Color
+
+    For Each cell In rngSum
+        If cell.Interior.Color = targetColor Then
+            SumByColor = SumByColor + cell.Value
+        End If
+    Next cell
+End Function
+\`\`\`
+
+الاستخدام:
+\`\`\`excel
+=SumByColor(A1:A20, C1)   ' يجمع الخلايا بنفس لون C1
+\`\`\`
+
+## UDF مع معاملات اختيارية
+
+\`\`\`vba
+Function TaxCalc(amount As Double, Optional taxRate As Double = 0.14) As Double
+    TaxCalc = amount * taxRate
+End Function
+\`\`\`
+
+\`\`\`excel
+=TaxCalc(1000)       → 140  (يستخدم 14% الافتراضي)
+=TaxCalc(1000, 0.1)  → 100  (يستخدم 10%)
+\`\`\`
+
+## UDF للنصوص العربية
+
+\`\`\`vba
+' دالة لعكس النص
+Function ReverseText(txt As String) As String
+    Dim i As Integer
+    Dim result As String
+    For i = Len(txt) To 1 Step -1
+        result = result & Mid(txt, i, 1)
+    Next i
+    ReverseText = result
+End Function
+
+' دالة لاستخراج الأرقام من النص
+Function ExtractNumbers(txt As String) As String
+    Dim i As Integer
+    Dim result As String
+    For i = 1 To Len(txt)
+        If Mid(txt, i, 1) >= "0" And Mid(txt, i, 1) <= "9" Then
+            result = result & Mid(txt, i, 1)
+        End If
+    Next i
+    ExtractNumbers = result
+End Function
+\`\`\`
+
+## قواعد UDF
+
+1. تبدأ بـ \`Function\` لا \`Sub\`
+2. لا يمكنها تعديل خلايا أو تنسيقات (Read-Only)
+3. يجب حفظ الملف بصيغة \`.xlsm\`
+4. تظهر في Autocomplete مع باقي الدوال
+
+## إضافة توثيق للدالة
+
+\`\`\`vba
+Function Grade(score As Double) As String
+    ' وصف يظهر في Function Wizard
+    Application.MacroOptions _
+        Macro:="Grade", _
+        Description:="تحوّل الدرجة الرقمية إلى تقدير نصي", _
+        Category:="دوال مخصصة"
+End Function
+\`\`\`
+
+> 💡 UDFs ممتازة لمنطق الأعمال المخصص — لكن تجنب استخدامها على نطاقات ضخمة لأنها أبطأ من الدوال المدمجة.`,
+    exercises: [
+      {
+        id: 83,
+        type: 'mcq',
+        question: 'ما الفرق بين Sub وFunction في VBA؟',
+        hint: 'فكّر في القيمة المُرجَعة',
+        options: [
+          'لا فرق — كلاهما متطابق',
+          'Function تُرجع قيمة يمكن استخدامها في خلايا Excel، Sub لا تُرجع قيمة',
+          'Sub أسرع في التنفيذ',
+          'Function فقط للأرقام، Sub للنصوص'
+        ],
+        correctIndex: 1,
+      },
+      {
+        id: 84,
+        type: 'mcq',
+        question: 'بأي امتداد يجب حفظ ملف Excel يحتوي UDFs؟',
+        hint: 'يجب أن يدعم الـ Macros',
+        options: ['.xlsx', '.xlsb', '.xlsm', '.xltx'],
+        correctIndex: 2,
+      },
+      {
+        id: 85,
+        type: 'mcq',
+        question: 'ما قيود UDF في Excel VBA؟',
+        hint: 'هناك شيء لا تستطيع فعله',
+        options: [
+          'لا تستطيع استقبال معاملات',
+          'لا تستطيع تعديل خلايا أو تنسيقات في الورقة',
+          'تعمل فقط على أعداد صحيحة',
+          'لا تظهر في Autocomplete'
+        ],
+        correctIndex: 1,
+      }
+    ]
+  },
 ];
