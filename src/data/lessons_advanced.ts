@@ -582,9 +582,9 @@ You are building an order form and want:
     description: 'دوال الـ Dynamic Arrays في Excel 365 التي تغيّر طريقة التعامل مع البيانات كلياً',
     descriptionEn: 'Excel 365 Dynamic Array functions that completely transform how you work with data',
     type: 'formula',
-    content: `## ما هي Dynamic Arrays؟
+    content: `## إيه هي Dynamic Arrays؟
 
-من أهم تحديثات Excel 365 — دوال تُرجع **مصفوفة نتائج** تمتد تلقائياً في الخلايا المجاورة بدون Ctrl+Shift+Enter.
+دي من أهم التحديثات اللي جابتها Microsoft في Excel 365 — دوال بترجع **مصفوفة نتائج** بتتمدد تلقائياً في الخلايا المجاورة من غير ما تضغط Ctrl+Shift+Enter.
 
 ## FILTER — فلترة ببيانات ديناميكية
 
@@ -831,15 +831,15 @@ Results automatically "spill" into neighboring cells. If those cells are occupie
     description: 'Goal Seek و Scenario Manager و Data Tables لاتخاذ قرارات مدروسة',
     descriptionEn: 'Goal Seek, Scenario Manager, and Data Tables for making informed decisions',
     type: 'concept',
-    content: `## ما هو What-If Analysis؟
+    content: `## إيه هو What-If Analysis؟
 
-أدوات تساعدك على الإجابة على سؤال: "**ماذا سيحدث لو...؟**"
+مجموعة أدوات في Excel بتساعدك تجاوب على سؤال: "**هيحصل إيه لو...؟**"
 
-Data → What-If Analysis
+Data ← What-If Analysis
 
-## Goal Seek — العمل بالهدف
+## Goal Seek — الوصول للهدف عكسياً
 
-"أريد الوصول إلى نتيجة معينة — ما القيمة المطلوبة؟"
+"عايز أوصل لنتيجة معينة — إيه القيمة اللي محتاجها؟"
 
 ### مثال: قرض شهري
 - لديك قرض 100,000 جنيه بفائدة 12% سنوياً
@@ -1039,7 +1039,7 @@ Constraints: do not exceed production capacity
     description: 'صيغ تعمل على نطاقات كاملة في آنٍ واحد لحل مسائل معقدة',
     descriptionEn: 'Formulas that operate on entire ranges at once to solve complex problems',
     type: 'formula',
-    content: `## ما هي Array Formulas؟
+    content: `## إيه هي Array Formulas؟
 
 صيغة عادية تعمل على خلية واحدة. Array Formula تعمل على **نطاق كامل** في خطوة واحدة.
 

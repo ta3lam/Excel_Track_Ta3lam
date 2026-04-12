@@ -50,7 +50,7 @@ Fact_Sales[ProductID] → Dim_Products[ID]
 | One-to-One | نادر الاستخدام | - |
 | Many-to-Many | يحتاج جدول وسيط | ⚠️ |
 
-> 💡 **قاعدة:** الـ Primary Key (القيم الفريدة) دايماً في جانب "One"، والـ Foreign Key في جانب "Many".`,
+> 💡 **قاعدة:** الـ Primary Key — وهي القيم الفريدة — دايماً في جانب "One"، والـ Foreign Key في جانب "Many".`,
     contentEn: `## What is the Data Model?
 
 The Data Model lets you link multiple tables together and analyse them as if they were a single table.
@@ -150,18 +150,18 @@ Fact_Sales[ProductID] → Dim_Products[ID]
     codeLang: 'dax',
     content: `## إيه هو DAX؟
 
-DAX = Data Analysis Expressions
-لغة صيغ مخصصة لـ Power Pivot وPower BI.
-تشبه Excel formulas لكن أقوى وبتتعامل مع الجداول.
+اسمه DAX، وهو اختصار لـ Data Analysis Expressions — لغة صيغ طوّرتها شركة Microsoft.
+ممكن تستخدمه في Excel عن طريق أداة Power Pivot، وكمان في Power BI.
+بيشتغل على الجداول كلها مش على خلية واحدة، ولو اتعلمته صح هتقدر تحلل ملايين الصفوف في ثانية.
 
-## Measure vs Calculated Column
+## Measure مقابل Calculated Column
 
 ### Measure — حساب ديناميكي
 \`\`\`dax
 Total Sales = SUM(Sales[Amount])
 \`\`\`
-بيتحسب بناءً على الفلتر الحالي في الـ Pivot Table.
-مخزّن في الـ Data Model مش في الجدول.
+بيتحسب بناءً على الفلتر اللي شغّال في الـ Pivot Table.
+بيتخزن في الـ Data Model مش في الجدول.
 
 ### Calculated Column — عمود محسوب
 \`\`\`dax
@@ -169,18 +169,18 @@ Sales[Profit] = Sales[Revenue] - Sales[Cost]
 \`\`\`
 بيتحسب لكل صف وبيتخزن في الجدول.
 
-**متى تستخدم أيهما؟**
-- **Measure** — للتجميعات (SUM, COUNT, AVERAGE) — الغالبية
-- **Calculated Column** — لحسابات الصف الواحد (ربح كل طلب)
+**امتى تستخدم أيهم؟**
+- **Measure** — للتجميعات زي SUM, COUNT, AVERAGE — الغالبية العظمى
+- **Calculated Column** — لحسابات الصف الواحد زي ربح كل طلب
 
-## Row Context vs Filter Context
+## Row Context مقابل Filter Context
 
 ### Row Context
-عندما تحسب Calculated Column — DAX يعرف "أنا في أي صف؟"
+لما بتحسب Calculated Column — DAX عارف "أنا في أنهي صف؟"
 
 ### Filter Context
-عندما تحسب Measure — DAX يعرف "أنا مفلتر على أيه؟"
-هذا هو السر وراء قوة DAX.
+لما بتحسب Measure — DAX عارف "فيه فلاتر إيه شغّالة دلوقتي؟"
+ده هو السر وراء قوة DAX.
 
 ## أول 3 دوال لازم تتعلمها
 
@@ -470,9 +470,9 @@ DIVIDE(
     descriptionEn: 'Calculate YTD, MTD, and year-over-year comparisons with ease',
     type: 'code',
     codeLang: 'dax',
-    content: `## متطلب أساسي: Date Table
+    content: `## متطلب أساسي — Date Table
 
-Time Intelligence في DAX بيحتاج جدول تواريخ متواصل بدون فجوات.
+دوال Time Intelligence في DAX بتحتاج جدول تواريخ متواصل من غير فجوات.
 
 \`\`\`dax
 -- إنشاء Date Table تلقائياً
@@ -649,9 +649,9 @@ RANKX(
 )
 \`\`\`
 
-**Dense vs Skip:**
-- Dense: 1, 2, 3, 3, 4 (لو تعادل، يكمل من بعده)
-- Skip: 1, 2, 3, 3, 5 (يتخطى الرقم)
+**Dense مقابل Skip:**
+- Dense: 1, 2, 3, 3, 4 — لو تعادل، يكمل من بعده
+- Skip: 1, 2, 3, 3, 5 — لو تعادل، يتخطى الرقم
 
 ## TOPN — أفضل N
 
@@ -821,13 +821,13 @@ CALCULATE([Total Sales], TOPN(5, Products, [Total Sales]))`,
     codeLang: 'dax',
     content: `## الفرق الجوهري
 
-هذا أهم مفهوم يُخطئ فيه المبتدئون في DAX.
+ده أهم مفهوم بيغلط فيه المبتدئين في DAX.
 
 | | Calculated Column | Measure |
 |--|-------------------|---------|
 | الحساب | عند تحميل البيانات (مرة واحدة) | عند تحديث التقرير (ديناميكي) |
 | التخزين | في الـ Data Model (يزيد الحجم) | لا تُخزَّن — تُحسَّب عند الطلب |
-| السياق | Row Context (صف بصف) | Filter Context (المرشّحات النشطة) |
+| السياق | Row Context — صف بصف | Filter Context — المرشّحات النشطة |
 | الاستخدام | بيانات مشتقة ثابتة | مقاييس تتغير بالـ Slicer والـ Filter |
 
 ## Calculated Column — العمود المحسوب
@@ -1019,7 +1019,7 @@ Avg Profit Margin = AVERAGE(Sales[Profit Margin %])`,
     codeLang: 'dax',
     content: `## مشكلة Filter Context
 
-في DAX، كل مقياس يُحسَّب ضمن فلاتر الـ Pivot. أحياناً تريد **تجاهل** بعض هذه الفلاتر.
+في DAX، كل مقياس بيتحسب جوّا فلاتر الـ Pivot. أحياناً بتحتاج **تتجاهل** بعض الفلاتر دي.
 
 ## ALL — إزالة جميع الفلاتر
 
@@ -1227,9 +1227,9 @@ DIVIDE(
     descriptionEn: 'Use variables to write cleaner, faster, and more readable DAX formulas',
     type: 'code',
     codeLang: 'dax',
-    content: `## لماذا VAR/RETURN؟
+    content: `## ليه VAR/RETURN؟
 
-قبل VAR، كانت الصيغ المعقدة تتطلب تكرار نفس الحسابات:
+قبل VAR، الصيغ المعقدة كانت بتحتاج تكرار نفس الحسابات:
 
 \`\`\`dax
 -- ❌ بدون VAR — تكرار وبطء

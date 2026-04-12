@@ -496,7 +496,7 @@ The last argument \`-1\` = start searching from the end of the table.
 =COUNTIF(A2:A10, "*أحمد*")    ← عدّ اللي يحتوي كلمة أحمد
 \`\`\`
 
-## Wildcards (أحرف البدل)
+## Wildcards — أحرف البدل
 
 \`\`\`excel
 *   → أي عدد من الأحرف     "مبي*" = مبيعات، مبيوعات...

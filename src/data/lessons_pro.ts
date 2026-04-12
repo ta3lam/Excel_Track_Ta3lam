@@ -10,48 +10,48 @@ export const lessonsPro: Lesson[] = [
     type: 'concept',
     content: `## إيه هو VBA؟
 
-VBA = Visual Basic for Applications
-لغة برمجة مدمجة في Excel بتخليك:
-- تشغّل مهام متكررة بضغطة زرار
-- تبني نماذج وأدوات مخصصة
-- تتحكم في Excel برمجياً
+اسمه VBA، وهو اختصار لـ Visual Basic for Applications — وهي لغة برمجة طوّرتها شركة Microsoft وبتشتغل مدمجة جوّا Excel.
+بتستخدمها لـ:
+- تشغيل مهام متكررة بضغطة زرار
+- بناء نماذج وأدوات مخصصة
+- التحكم في Excel برمجياً
 
-## متى تستخدم VBA؟
+## امتى تستخدم VBA؟
 
-✅ مهام متكررة يومياً تاخد وقت
+✅ مهام متكررة يومياً بتاخد وقت
 ✅ تنسيق تقارير بشكل موحد تلقائياً
-✅ نماذج (Forms) لإدخال البيانات
+✅ نماذج لإدخال البيانات — Forms
 ✅ أتمتة عمليات معقدة
 
 ❌ مش محتاجه لو Power Query أو الصيغ تكفي
 
 ## فتح محرر VBA
 
-**Alt + F11** لفتح Visual Basic Editor (VBE)
+**Alt + F11** لفتح Visual Basic Editor — اختصاره VBE
 
 الواجهة:
 \`\`\`
 ┌─────────────┬─────────────────────┐
 │ Project     │                     │
 │ Explorer    │    Code Window      │
-│             │   (هنا تكتب كودك)  │
+│             │    هنا تكتب كودك   │
 ├─────────────┤                     │
 │ Properties  │                     │
 └─────────────┴─────────────────────┘
 \`\`\`
 
-## تسجيل Macro — البداية السهلة
+## تسجيل Macro — أسهل بداية
 
-1. View → Macros → Record Macro
-2. افعل ما تريد أتمتته
-3. View → Macros → Stop Recording
-4. شوف الكود المسجّل (Alt + F11)
+1. View ← Macros ← Record Macro
+2. افعل اللي عايز تأتمته
+3. View ← Macros ← Stop Recording
+4. شوف الكود المسجّل بـ Alt + F11
 
 ## حفظ الملف
 
-ملفات VBA لازم تتحفظ كـ **.xlsm** (Excel Macro-Enabled Workbook)
+ملفات VBA لازم تتحفظ بامتداد **.xlsm** — اختصاره Excel Macro-Enabled Workbook
 
-> ⚠️ **أمان:** فعّل الـ Macros فقط من ملفات تثق بها.`,
+> ⚠️ **أمان:** فعّل الـ Macros بس من ملفات بتثق فيها.`,
     contentEn: `## What is VBA?
 
 VBA = Visual Basic for Applications
@@ -715,9 +715,9 @@ Level 6    →  Senior Analyst / BI Developer
     descriptionEn: 'Build professional data entry forms with UserForm to collect data safely and efficiently',
     type: 'code',
     codeLang: 'vba',
-    content: `## ما هو UserForm؟
+    content: `## إيه هو UserForm؟
 
-UserForm هو نافذة مخصصة تبنيها بنفسك بداخل Excel — مثل نموذج إدخال بيانات احترافي.
+اسمه UserForm — وهو نافذة مخصصة بتبنيها بنفسك جوّا Excel، زي نموذج إدخال بيانات احترافي.
 
 ## إنشاء UserForm
 
@@ -984,9 +984,9 @@ End Sub
     descriptionEn: 'Build custom Excel functions with VBA that you use just like SUM and VLOOKUP',
     type: 'code',
     codeLang: 'vba',
-    content: `## ما هي UDF؟
+    content: `## إيه هي UDF؟
 
-**User Defined Function** — دالة تكتبها أنت بـ VBA وتستخدمها في خلايا Excel مثل أي دالة عادية:
+اسمها UDF، وهو اختصار لـ User Defined Function — يعني دالة بتكتبها أنت بـ VBA وبتستخدمها في خلايا Excel زي أي دالة عادية:
 \`\`\`excel
 =MyFunction(A1, B1)
 \`\`\`
