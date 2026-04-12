@@ -4,14 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Excel Data Analysis Mastery** (إتقان تحليل البيانات بـ Excel) is an Arabic-only interactive Excel learning platform that runs entirely in the browser. Deployed as a single self-contained HTML file to GitHub Pages at https://ta3lam.github.io/excel.
+**Excel Data Analysis Mastery** (إتقان تحليل البيانات بـ Excel) — Arabic-only interactive Excel learning platform. Runs entirely in the browser, deployed as a single self-contained HTML file to GitHub Pages at https://ta3lam.github.io/excel.
 
 ## Commands
 
 ```bash
-npm run dev       # Dev server at http://localhost:5173
-npm run build     # Production build → dist/index.html (single file, all assets inlined)
-npm run preview   # Preview production build locally
+npm run dev        # Dev server at http://localhost:5173
+npm run build      # Production build → dist/index.html (all assets inlined)
+npm run preview    # Preview production build locally
+npm run workbook   # Regenerate public/excel-exercises.xlsx from lesson data
 ```
 
 No test suite configured.
@@ -20,68 +21,64 @@ No test suite configured.
 
 ### Tech Stack
 - **React 19 + TypeScript** (strict mode), **Vite 7**, **Tailwind CSS 4**
-- **HyperFormula (gpl-v3)** — in-browser Excel formula evaluation engine
-- **react-markdown + remark-gfm** — renders lesson content (markdown)
-- **vite-plugin-singlefile** — bundles everything into one `dist/index.html`
+- **HyperFormula (gpl-v3)** — in-browser Excel formula evaluation
+- **react-markdown + remark-gfm** — renders lesson markdown content
+- **ExcelJS** (dev) — generates the downloadable exercise workbook via `scripts/create-workbook.ts`
+- **vite-plugin-singlefile** — inlines all JS/CSS/assets into one `dist/index.html`
 
 ### State & Data Flow
 
-**`App.tsx`** owns all global state: current lesson ID, sidebar toggle. Progress persists to `localStorage` via `useProgress` hook.
+**`App.tsx`** owns all global state: `currentLessonId`, `sidebarOpen`. Progress (completed lesson IDs) persists to `localStorage` via `useProgress` hook (`src/hooks/useProgress.ts`, key: `excel-mastery-progress-v1`).
 
-`allLessons` array and `LEVEL_GROUPS` are imported from `src/data/lessons.ts` (aggregator).
+`NavArrow` is defined outside `App` (module level) to prevent remounting on every render.
+
+Split-pane layout: left = `LessonContent` (markdown), right = `LessonPane` (interactive). On mobile, the pane stacks below the content.
 
 ### Lesson Types
 
-Three types defined in `src/types/index.ts`:
-- **`formula`** — shows `FormulaEditor` (HyperFormula-powered grid + formula bar). Requires `sheet` and optionally `example`.
-- **`code`** — shows styled read-only code block (`CodeDisplay`). Requires `example` and `codeLang` (`dax` | `m` | `vba`).
-- **`concept`** — markdown content only, no interactive editor.
+Three types in `src/types/index.ts`:
+- **`formula`** — `FormulaEditor` with HyperFormula grid. Requires `sheet: SheetData` and optionally `example`.
+- **`code`** — read-only `CodeDisplay` block. Requires `example` (string) and `codeLang: 'dax' | 'm' | 'vba'`.
+- **`concept`** — markdown content only, no interactive panel (just a manual "complete" button).
 
 ### Exercise Types
-- **`formula`** — learner types a formula, `checkFunction(result, formula)` validates it.
-- **`mcq`** — multiple choice with `options[]` and `correctIndex`.
+- **`formula`** — user types a formula into `FormulaEditor`; `checkFunction(result: FormulaResult, formula: string) => boolean` validates it.
+- **`mcq`** — multiple choice; requires `options: string[]` and `correctIndex: number`.
 
-### Formula Evaluation
+### Formula Evaluation (`FormulaEditor.tsx`)
 
-`evaluateFormula(formula, sheet)` in `FormulaEditor.tsx`:
-- Builds a HyperFormula instance from `sheet.headers` + `sheet.rows`
-- Places the user's formula at `row = allData.length` (after all data rows)
-- Returns the computed result, then destroys the instance
+`evaluateFormula(formula, sheet)`:
+1. Builds HyperFormula from `[sheet.headers, ...sheet.rows]`
+2. Places the user's formula at `row = allData.length` (one row below the data)
+3. Returns computed result via `getCellValue`, then calls `hf.destroy()`
 
-### Lesson Data Structure
+Row 1 in the grid = headers, Row 2+ = data rows, so `=SUM(B2:B4)` is always correct for 3-row data.
+
+### Lesson Data
 
 Files in `src/data/`:
-- `lessons_zero.ts` — IDs 1–8 (تحت الصفر): أساسيات Excel، اختصارات لوحة المفاتيح، تنسيق الخلايا، Named Ranges
-- `lessons_beginner.ts` — IDs 11–19 (الأساسيات): SUM/AVERAGE، MAX/MIN/ROUND، دوال النصوص، IF/AND/OR، دوال التاريخ، IFERROR، ABS/MOD/CEILING
-- `lessons_lookup.ts` — IDs 21–27 (البحث والمرجع): VLOOKUP، INDEX/MATCH، XLOOKUP، SUMIF/COUNTIFS، OFFSET/INDIRECT، CHOOSE
-- `lessons_advanced.ts` — IDs 31–37 (المتقدم): Pivot Tables، Charts، Data Validation، Dynamic Arrays، What-If Analysis، Array Formulas
-- `lessons_powerquery.ts` — IDs 41–46 (Power Query): مقدمة PQ، التحويلات، لغة M، Append/Merge، Pivot/Unpivot، Group By
-- `lessons_expert.ts` — IDs 51–58 (DAX والـ Data Model): Data Model، DAX، CALCULATE، Time Intelligence، RANKX، Measures vs Columns، ALL/ALLEXCEPT، VAR/RETURN
-- `lessons_pro.ts` — IDs 61–66 (الاحتراف): VBA مقدمة، VBA أساسيات، الحلقات والأحداث، الشهادات، UserForms، UDFs
-- `lessons.ts` — aggregator: exports `allLessons`, `LEVEL_GROUPS`, `LEVEL_COLORS`
 
-**Total lessons: 50** (as of last update)
+| File | Level label | IDs | Count |
+|------|------------|-----|-------|
+| `lessons_zero.ts` | تحت الصفر | 1–10 | 8 |
+| `lessons_beginner.ts` | الأساسيات | 11–20 | 9 |
+| `lessons_lookup.ts` | البحث والمرجع | 21–30 | 7 |
+| `lessons_advanced.ts` | المتقدم | 31–40 | 7 |
+| `lessons_powerquery.ts` | Power Query | 41–50 | 6 |
+| `lessons_expert.ts` | DAX والـ Data Model | 51–60 | 8 |
+| `lessons_pro.ts` | الاحتراف | 61–70 | 6 |
+| `lessons.ts` | aggregator | — | — |
 
-When adding new lessons, update both the lesson file AND the `lessonIds` array in the corresponding `LEVEL_GROUPS` entry in `lessons.ts`.
+**Total: 51 lessons.** `lessons.ts` exports `allLessons`, `LEVEL_GROUPS`, `LEVEL_COLORS`.
 
-### ID Ranges per Level
+**When adding a lesson:** add to the lesson file AND add its ID to `lessonIds` in the matching `LEVEL_GROUPS` entry in `lessons.ts`. Keep IDs within the reserved range for each level.
 
-| Level | IDs reserved |
-|-------|-------------|
-| تحت الصفر | 1–10 |
-| الأساسيات | 11–20 |
-| البحث والمرجع | 21–30 |
-| المتقدم | 31–40 |
-| Power Query | 41–50 |
-| DAX والـ Data Model | 51–60 |
-| الاحتراف | 61–70 |
+### Exercise Workbook (`scripts/create-workbook.ts`)
 
-### Sidebar Level Groups
+Generates `public/excel-exercises.xlsx` using ExcelJS. Run with `npm run workbook` after any lesson changes. The file is committed to `public/` and served statically from GitHub Pages. The download button in `App.tsx` links to `excel-exercises.xlsx` (relative path, resolved by GitHub Pages).
 
-`LEVEL_GROUPS` in `src/data/lessons.ts` maps lesson IDs to sidebar sections. When adding lessons, add their IDs to the correct group's `lessonIds` array.
-
-`LEVEL_COLORS` maps color names to Tailwind class sets: `slate`, `emerald`, `blue`, `violet`, `orange`, `red`, `amber`.
+Structure: one index sheet + one sheet per lesson. Yellow cells = answer cells for the learner. Sheet names are truncated to 31 chars (Excel limit).
 
 ### Deployment
 
-GitHub Actions (`.github/workflows/deploy.yml`) auto-deploys on push to `main`: runs `npm ci && npm run build`, then deploys `dist/index.html` to GitHub Pages.
+GitHub Actions (`.github/workflows/deploy.yml`) auto-deploys on push to `main`: `npm ci && npm run build`, uploads `dist/` to GitHub Pages. The `public/` folder (including `excel-exercises.xlsx` and the logo) is copied into `dist/` by Vite automatically.
