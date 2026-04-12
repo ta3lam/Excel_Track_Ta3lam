@@ -1,5 +1,6 @@
 import { Lesson, LevelGroup } from '../types';
 import { LEVEL_COLORS } from '../data/lessons';
+import logo from '../assets/logo.png';
 
 interface SidebarProps {
   lessons: Lesson[];
@@ -38,9 +39,7 @@ export function Sidebar({
         <div className="p-4 border-b border-gray-700/50 flex-shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center text-sm">
-                📊
-              </div>
+              <img src={logo} alt="Ta3laM" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
               <div>
                 <h1 className="text-sm font-bold text-white leading-tight">إتقان تحليل البيانات</h1>
                 <p className="text-xs text-gray-400">Excel Mastery</p>
