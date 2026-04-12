@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Exercise, FormulaResult } from '../types';
 import { FormulaEditor, evaluateFormula } from './FormulaEditor';
+import { useAppContext } from '../contexts/AppContext';
 
 interface ExercisePanelProps {
   exercises: Exercise[];
@@ -8,20 +9,17 @@ interface ExercisePanelProps {
 }
 
 export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) {
-  const [current, setCurrent] = useState(0);
-  const [results, setResults] = useState<Record<number, boolean>>({});
-  const [showHint, setShowHint] = useState(false);
-  const [wrong, setWrong] = useState(false);
-  const [selectedMcq, setSelectedMcq] = useState<number | null>(null);
+  const { t } = useAppContext();
+  const [current, setCurrent]           = useState(0);
+  const [results, setResults]           = useState<Record<number, boolean>>({});
+  const [showHint, setShowHint]         = useState(false);
+  const [wrong, setWrong]               = useState(false);
+  const [selectedMcq, setSelectedMcq]   = useState<number | null>(null);
   const [mcqSubmitted, setMcqSubmitted] = useState(false);
 
   useEffect(() => {
-    setCurrent(0);
-    setResults({});
-    setShowHint(false);
-    setWrong(false);
-    setSelectedMcq(null);
-    setMcqSubmitted(false);
+    setCurrent(0); setResults({}); setShowHint(false);
+    setWrong(false); setSelectedMcq(null); setMcqSubmitted(false);
   }, [exercises]);
 
   const exercise = exercises[current];
@@ -39,10 +37,8 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
 
   const handleFormulaResult = useCallback((result: FormulaResult, formula: string) => {
     if (!exercise.checkFunction) return;
-    const passed = exercise.checkFunction(result, formula);
-    if (passed) {
-      markDone(exercise.id);
-      setWrong(false);
+    if (exercise.checkFunction(result, formula)) {
+      markDone(exercise.id); setWrong(false);
     } else {
       setWrong(true);
     }
@@ -52,48 +48,32 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
     if (selectedMcq === null) return;
     setMcqSubmitted(true);
     if (selectedMcq === exercise.correctIndex) {
-      markDone(exercise.id);
-      setWrong(false);
+      markDone(exercise.id); setWrong(false);
     } else {
       setWrong(true);
     }
   }, [selectedMcq, exercise, markDone]);
 
-  const goNext = () => {
-    if (current < exercises.length - 1) {
-      setCurrent(c => c + 1);
-      setShowHint(false);
-      setWrong(false);
-      setSelectedMcq(null);
-      setMcqSubmitted(false);
-    }
-  };
-
-  const goPrev = () => {
-    if (current > 0) {
-      setCurrent(c => c - 1);
-      setShowHint(false);
-      setWrong(false);
-      setSelectedMcq(null);
-      setMcqSubmitted(false);
-    }
-  };
+  const reset = () => { setShowHint(false); setWrong(false); setSelectedMcq(null); setMcqSubmitted(false); };
+  const goNext = () => { if (current < exercises.length - 1) { setCurrent(c => c + 1); reset(); } };
+  const goPrev = () => { if (current > 0) { setCurrent(c => c - 1); reset(); } };
 
   const isDone = results[exercise.id] === true;
 
   return (
-    <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-l from-amber-600 to-orange-600 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </div>
           <div>
-            <p className="text-white text-sm font-semibold">تمرين {current + 1} من {exercises.length}</p>
-            <p className="text-amber-100 text-xs">{completedCount} مكتمل</p>
+            <p className="text-white text-sm font-semibold">{t.exerciseOf(current + 1, exercises.length)}</p>
+            <p className="text-amber-100 text-xs">{t.completedCount(completedCount)}</p>
           </div>
         </div>
         {/* Dots */}
@@ -101,7 +81,7 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
           {exercises.map((ex, i) => (
             <button
               key={ex.id}
-              onClick={() => { setCurrent(i); setShowHint(false); setWrong(false); setSelectedMcq(null); setMcqSubmitted(false); }}
+              onClick={() => { setCurrent(i); reset(); }}
               className={`w-2.5 h-2.5 rounded-full transition-all ${
                 results[ex.id] ? 'bg-emerald-300' : i === current ? 'bg-white' : 'bg-white/30 hover:bg-white/50'
               }`}
@@ -113,32 +93,28 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
       <div className="p-4 space-y-4">
         {/* Question */}
         <div>
-          <p className="text-gray-200 text-sm font-medium leading-relaxed">{exercise.question}</p>
-
+          <p className="text-gray-800 dark:text-gray-200 text-sm font-medium leading-relaxed" dir="rtl">
+            {exercise.question}
+          </p>
           <button
             onClick={() => setShowHint(!showHint)}
-            className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors"
+            className="mt-2 text-xs text-indigo-500 hover:text-indigo-400 flex items-center gap-1.5 transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {showHint ? 'إخفاء التلميح' : 'إظهار التلميح'}
+            {showHint ? t.hideHint : t.showHint}
           </button>
-
           {showHint && (
             <div className="mt-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg p-3">
-              <p className="text-indigo-300 text-xs font-mono">💡 {exercise.hint}</p>
+              <p className="text-indigo-600 dark:text-indigo-300 text-xs font-mono" dir="rtl">💡 {exercise.hint}</p>
             </div>
           )}
         </div>
 
         {/* Formula exercise */}
         {exercise.type === 'formula' && exercise.sheet && (
-          <FormulaEditor
-            key={exercise.id}
-            sheet={exercise.sheet}
-            onResult={handleFormulaResult}
-          />
+          <FormulaEditor key={exercise.id} sheet={exercise.sheet} onResult={handleFormulaResult} />
         )}
 
         {/* MCQ exercise */}
@@ -146,26 +122,27 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
           <div className="space-y-2">
             {exercise.options.map((opt, i) => {
               const isSelected = selectedMcq === i;
-              const isCorrect = i === exercise.correctIndex;
-              let cls = 'border-gray-700 text-gray-300 hover:border-gray-500 hover:bg-gray-700/30';
+              const isCorrect  = i === exercise.correctIndex;
+              let cls = 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/30';
               if (mcqSubmitted) {
-                if (isCorrect) cls = 'border-emerald-500 bg-emerald-500/10 text-emerald-300';
-                else if (isSelected && !isCorrect) cls = 'border-red-500 bg-red-500/10 text-red-300';
-                else cls = 'border-gray-700 text-gray-500';
+                if (isCorrect)              cls = 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
+                else if (isSelected)        cls = 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-300';
+                else                        cls = 'border-gray-200 dark:border-gray-700 text-gray-400';
               } else if (isSelected) {
-                cls = 'border-amber-500 bg-amber-500/10 text-amber-300';
+                cls = 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300';
               }
-
               return (
                 <button
                   key={i}
                   onClick={() => { if (!mcqSubmitted) setSelectedMcq(i); }}
                   disabled={mcqSubmitted}
-                  className={`w-full text-right px-4 py-2.5 rounded-lg border transition-all text-sm flex items-center gap-3 ${cls}`}
+                  className={`w-full text-start px-4 py-2.5 rounded-lg border transition-all text-sm flex items-center gap-3 ${cls}`}
+                  dir="rtl"
                 >
                   <span className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center text-xs font-bold ${
-                    mcqSubmitted && isCorrect ? 'border-emerald-500 text-emerald-400' :
-                    isSelected ? 'border-amber-400 text-amber-300' : 'border-gray-600 text-gray-500'
+                    mcqSubmitted && isCorrect  ? 'border-emerald-500 text-emerald-500' :
+                    isSelected                 ? 'border-amber-400 text-amber-500' :
+                    'border-gray-300 dark:border-gray-600 text-gray-400'
                   }`}>
                     {mcqSubmitted && isCorrect ? '✓' : mcqSubmitted && isSelected && !isCorrect ? '✗' : String.fromCharCode(65 + i)}
                   </span>
@@ -173,14 +150,13 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
                 </button>
               );
             })}
-
             {!mcqSubmitted && (
               <button
                 onClick={handleMcqSubmit}
                 disabled={selectedMcq === null}
                 className="w-full mt-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2 rounded-lg text-sm font-medium transition-colors"
               >
-                تأكيد الإجابة
+                {t.confirmAnswer}
               </button>
             )}
           </div>
@@ -189,40 +165,40 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
         {/* Feedback */}
         {isDone && (
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-2">
-            <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-emerald-300 text-sm font-medium">إجابة صحيحة! 🎉</span>
+            <span className="text-emerald-700 dark:text-emerald-300 text-sm font-medium">{t.correctAnswer}</span>
           </div>
         )}
 
         {wrong && !isDone && exercise.type === 'formula' && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm flex items-center gap-2">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            النتيجة غير صحيحة — راجع الصيغة وحاول مجدداً
+            {t.wrongFormula}
           </div>
         )}
 
         {/* Navigation */}
-        <div className="flex justify-between pt-2 border-t border-gray-700/50">
+        <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700/50">
           <button
             onClick={goPrev}
             disabled={current === 0}
-            className="text-sm text-gray-400 hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors px-2 py-1 rounded"
+            className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors px-2 py-1 rounded"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            السابق
+            {t.prev}
           </button>
           <button
             onClick={goNext}
             disabled={current === exercises.length - 1}
-            className="text-sm text-amber-400 hover:text-amber-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors px-2 py-1 rounded"
+            className="text-sm text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition-colors px-2 py-1 rounded"
           >
-            التالي
+            {t.next}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
