@@ -23,7 +23,7 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'تحت الصفر',
     labelSub: 'Under Zero',
     color: 'slate',
-    lessonIds: [1, 2, 3, 4, 5],
+    lessonIds: [1, 2, 3, 4, 5, 6, 7, 8],
   },
   {
     id: 'beginner',
