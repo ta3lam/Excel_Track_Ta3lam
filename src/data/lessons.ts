@@ -51,7 +51,7 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'Power Query',
     labelSub: 'Power Query & M',
     color: 'orange',
-    lessonIds: [41, 42, 43, 44],
+    lessonIds: [41, 42, 43, 44, 45, 46],
   },
   {
     id: 'expert',
