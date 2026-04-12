@@ -1,9 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { LessonContent } from './components/LessonContent';
 import { LessonPane } from './components/LessonPane';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { allLessons, LEVEL_GROUPS } from './data/lessons';
 import { useProgress } from './hooks/useProgress';
+
+const WELCOMED_KEY = 'excel-mastery-welcomed';
 
 function NavArrow({ direction, onClick, disabled }: { direction: 'prev' | 'next'; onClick: () => void; disabled: boolean }) {
   return (
@@ -32,10 +35,20 @@ function NavArrow({ direction, onClick, disabled }: { direction: 'prev' | 'next'
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentLessonId, setCurrentLessonId] = useState<number>(allLessons[0]?.id ?? 1);
+  const [mobileTab, setMobileTab] = useState<'content' | 'exercises'>('content');
+  const [showWelcome, setShowWelcome] = useState<boolean>(
+    () => !localStorage.getItem(WELCOMED_KEY)
+  );
+
   const { completed, markComplete, resetProgress } = useProgress();
 
   const currentIndex = allLessons.findIndex(l => l.id === currentLessonId);
   const currentLesson = allLessons[currentIndex];
+
+  // Reset mobile tab to content when lesson changes
+  useEffect(() => {
+    setMobileTab('content');
+  }, [currentLessonId]);
 
   const goNext = useCallback(() => {
     if (currentIndex < allLessons.length - 1) {
@@ -58,9 +71,20 @@ export default function App() {
     setSidebarOpen(false);
   }, []);
 
+  const handleStart = useCallback(() => {
+    localStorage.setItem(WELCOMED_KEY, '1');
+    setShowWelcome(false);
+  }, []);
+
   const completedPct = Math.round((completed.length / allLessons.length) * 100);
 
+  if (showWelcome) {
+    return <WelcomeScreen onStart={handleStart} />;
+  }
+
   if (!currentLesson) return null;
+
+  const hasExercises = currentLesson.exercises.length > 0 || currentLesson.sheet || currentLesson.example;
 
   return (
     <div className="flex h-screen bg-gray-950 text-white overflow-hidden" dir="rtl">
@@ -131,10 +155,42 @@ export default function App() {
           </div>
         </header>
 
+        {/* Mobile tab bar */}
+        {hasExercises && (
+          <div className="lg:hidden flex-shrink-0 flex border-b border-gray-700/50 bg-gray-900">
+            <button
+              onClick={() => setMobileTab('content')}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+                mobileTab === 'content'
+                  ? 'text-emerald-400 border-emerald-500'
+                  : 'text-gray-500 border-transparent hover:text-gray-300'
+              }`}
+            >
+              المحتوى
+            </button>
+            <button
+              onClick={() => setMobileTab('exercises')}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+                mobileTab === 'exercises'
+                  ? 'text-amber-400 border-amber-500'
+                  : 'text-gray-500 border-transparent hover:text-gray-300'
+              }`}
+            >
+              التمارين
+              {currentLesson.exercises.length > 0 && (
+                <span className="mr-1.5 text-xs opacity-60">({currentLesson.exercises.length})</span>
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Split pane */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left: lesson content */}
-          <div className="flex-1 min-w-0 overflow-y-auto p-4 lg:p-6">
+          <div className={`
+            flex-1 min-w-0 overflow-y-auto p-4 lg:p-6
+            ${mobileTab === 'content' ? 'block' : 'hidden'} lg:block
+          `}>
             <div className="max-w-2xl mx-auto animate-fadeIn" key={currentLesson.id}>
               <LessonContent lesson={currentLesson} />
             </div>
@@ -143,8 +199,12 @@ export default function App() {
           {/* Divider */}
           <div className="hidden lg:block w-px bg-gray-700/50 flex-shrink-0" />
 
-          {/* Right: interactive panel */}
-          <div className="hidden lg:flex lg:w-96 xl:w-[420px] flex-shrink-0 flex-col overflow-hidden">
+          {/* Right: interactive panel (desktop always, mobile only if exercises tab) */}
+          <div className={`
+            flex-shrink-0 flex-col overflow-hidden
+            ${mobileTab === 'exercises' ? 'flex flex-1' : 'hidden'}
+            lg:flex lg:flex-initial lg:w-96 xl:w-[420px]
+          `}>
             <div className="flex-1 overflow-y-auto p-4">
               <div className="animate-fadeIn" key={`pane-${currentLesson.id}`}>
                 <LessonPane
@@ -163,17 +223,6 @@ export default function App() {
               </span>
               <NavArrow direction="next" onClick={goNext} disabled={currentIndex === allLessons.length - 1} />
             </div>
-          </div>
-        </div>
-
-        {/* Mobile: interactive panel below content */}
-        <div className="lg:hidden border-t border-gray-700/50 overflow-y-auto max-h-80 flex-shrink-0">
-          <div className="p-4">
-            <LessonPane
-              lesson={currentLesson}
-              isCompleted={completed.includes(currentLesson.id)}
-              onComplete={handleComplete}
-            />
           </div>
         </div>
       </div>

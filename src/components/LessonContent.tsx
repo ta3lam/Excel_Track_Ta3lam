@@ -51,7 +51,7 @@ export function LessonContent({ lesson }: LessonContentProps) {
           <div className="flex-1">
             {group && (
               <span className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full mb-3 ${colors.badge}`}>
-                {group.label} · {group.labelSub}
+                {group.label}
               </span>
             )}
             <h1 className="text-xl font-bold text-white mb-2">{lesson.title}</h1>

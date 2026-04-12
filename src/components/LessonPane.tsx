@@ -154,7 +154,7 @@ export function LessonPane({ lesson, isCompleted, onComplete }: LessonPaneProps)
         <div className="bg-gradient-to-l from-emerald-600 to-green-600 text-white rounded-xl p-4 text-center shadow-md">
           <div className="text-2xl mb-1">🎉</div>
           <p className="font-bold text-sm">أتممت جميع التمارين!</p>
-          <p className="text-xs text-emerald-100 mt-0.5">كمّل للدرس التالي</p>
+          <p className="text-xs text-emerald-100 mt-0.5">انتقل إلى الدرس التالي</p>
         </div>
       )}
     </div>

@@ -2,6 +2,27 @@ import { useState, useCallback } from 'react';
 import HyperFormula from 'hyperformula';
 import { SheetData, FormulaResult } from '../types';
 
+const EXCEL_ERROR_DESCRIPTIONS: Record<string, string> = {
+  '#N/A':     'القيمة غير موجودة في النطاق المحدد',
+  '#REF!':    'مرجع الخلية غير صالح أو محذوف',
+  '#VALUE!':  'نوع البيانات غير متوافق مع الدالة',
+  '#DIV/0!':  'لا يمكن القسمة على صفر',
+  '#NAME?':   'اسم الدالة أو النطاق غير معروف',
+  '#NUM!':    'قيمة عددية غير صالحة',
+  '#NULL!':   'تقاطع النطاقين المحددين فارغ',
+};
+
+function getResultDisplay(value: FormulaResult): { isError: boolean; text: string } {
+  if (value === null) return { isError: false, text: '—' };
+  const str = String(value);
+  for (const [code, desc] of Object.entries(EXCEL_ERROR_DESCRIPTIONS)) {
+    if (str.includes(code)) {
+      return { isError: true, text: `${desc} (${code})` };
+    }
+  }
+  return { isError: false, text: str };
+}
+
 interface FormulaEditorProps {
   sheet: SheetData;
   initialFormula?: string;
@@ -155,27 +176,37 @@ export function FormulaEditor({ sheet, initialFormula = '', onResult }: FormulaE
 
       {/* Result */}
       {result && (
-        <div className={`rounded-lg p-3 border ${
-          result.error
-            ? 'bg-red-500/10 border-red-500/30'
-            : 'bg-emerald-500/10 border-emerald-500/30'
-        }`}>
+        <>
           {result.error ? (
-            <div className="flex items-center gap-2 text-red-400 text-sm">
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="font-mono text-xs">{result.error}</span>
+            <div className="rounded-lg p-3 border bg-red-500/10 border-red-500/30">
+              <div className="flex items-start gap-2 text-red-400 text-sm">
+                <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs leading-relaxed">خطأ في الصيغة — تحقق من الكتابة الصحيحة</span>
+              </div>
             </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <span className="text-emerald-400 text-xs font-medium">النتيجة</span>
-              <span className="text-emerald-300 font-mono font-bold text-sm" dir="ltr">
-                {result.value === null ? 'null' : String(result.value)}
-              </span>
-            </div>
-          )}
-        </div>
+          ) : (() => {
+            const { isError, text } = getResultDisplay(result.value);
+            return (
+              <div className={`rounded-lg p-3 border ${isError ? 'bg-amber-500/10 border-amber-500/30' : 'bg-emerald-500/10 border-emerald-500/30'}`}>
+                {isError ? (
+                  <div className="flex items-start gap-2">
+                    <svg className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
+                    <span className="text-amber-300 text-xs leading-relaxed">{text}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-400 text-xs font-medium">النتيجة</span>
+                    <span className="text-emerald-300 font-mono font-bold text-sm" dir="ltr">{text}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </>
       )}
     </div>
   );
