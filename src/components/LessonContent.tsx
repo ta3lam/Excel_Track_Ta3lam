@@ -44,14 +44,19 @@ interface LessonContentProps { lesson: Lesson }
 
 export function LessonContent({ lesson }: LessonContentProps) {
   const { lang } = useAppContext();
+  const isEn = lang === 'en';
   const group  = LEVEL_GROUPS.find(g => g.lessonIds.includes(lesson.id));
   const colors = group ? LEVEL_COLORS[group.color] : LEVEL_COLORS['slate'];
-  const levelLabel = group ? (lang === 'ar' ? group.label : group.labelSub) : '';
+  const levelLabel = group ? (isEn ? group.labelSub : group.label) : '';
+  const title       = (isEn && lesson.titleEn)       ? lesson.titleEn       : lesson.title;
+  const description = (isEn && lesson.descriptionEn) ? lesson.descriptionEn : lesson.description;
+  const content     = (isEn && lesson.contentEn)     ? lesson.contentEn     : lesson.content;
+  const contentDir  = isEn ? 'ltr' : 'rtl';
 
   return (
     <div className="space-y-0">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-0 border border-gray-200 dark:border-gray-700/50 shadow-sm" dir="rtl">
+      <div className={`bg-white dark:bg-gray-800 rounded-2xl p-6 mb-0 border border-gray-200 dark:border-gray-700/50 shadow-sm`} dir={contentDir}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             {group && (
@@ -59,8 +64,8 @@ export function LessonContent({ lesson }: LessonContentProps) {
                 {levelLabel}
               </span>
             )}
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{lesson.title}</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{lesson.description}</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{description}</p>
           </div>
           <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border ${colors.border} ${colors.text}`}>
             {lesson.type === 'formula' ? 'fx' : lesson.type === 'code' ? '</>' : '📖'}
@@ -69,7 +74,7 @@ export function LessonContent({ lesson }: LessonContentProps) {
       </div>
 
       {/* Content */}
-      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl rounded-t-none border border-gray-200 dark:border-gray-700/50 border-t-0 p-5" dir="rtl">
+      <div className={`bg-gray-50 dark:bg-gray-800/50 rounded-xl rounded-t-none border border-gray-200 dark:border-gray-700/50 border-t-0 p-5`} dir={contentDir}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -137,7 +142,7 @@ export function LessonContent({ lesson }: LessonContentProps) {
             hr: () => <hr className="border-gray-200 dark:border-gray-700 my-5" />,
           }}
         >
-          {lesson.content}
+          {content}
         </ReactMarkdown>
       </div>
     </div>

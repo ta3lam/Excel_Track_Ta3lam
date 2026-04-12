@@ -9,7 +9,8 @@ interface ExercisePanelProps {
 }
 
 export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) {
-  const { t } = useAppContext();
+  const { t, lang } = useAppContext();
+  const isEn = lang === 'en';
   const [current, setCurrent]           = useState(0);
   const [results, setResults]           = useState<Record<number, boolean>>({});
   const [showHint, setShowHint]         = useState(false);
@@ -93,8 +94,8 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
       <div className="p-4 space-y-4">
         {/* Question */}
         <div>
-          <p className="text-gray-800 dark:text-gray-200 text-sm font-medium leading-relaxed" dir="rtl">
-            {exercise.question}
+          <p className="text-gray-800 dark:text-gray-200 text-sm font-medium leading-relaxed" dir={isEn && exercise.questionEn ? 'ltr' : 'rtl'}>
+            {isEn && exercise.questionEn ? exercise.questionEn : exercise.question}
           </p>
           <button
             onClick={() => setShowHint(!showHint)}
@@ -107,7 +108,9 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
           </button>
           {showHint && (
             <div className="mt-2 bg-indigo-500/10 border border-indigo-500/30 rounded-lg p-3">
-              <p className="text-indigo-600 dark:text-indigo-300 text-xs font-mono" dir="rtl">💡 {exercise.hint}</p>
+              <p className="text-indigo-600 dark:text-indigo-300 text-xs font-mono" dir={isEn && exercise.hintEn ? 'ltr' : 'rtl'}>
+                💡 {isEn && exercise.hintEn ? exercise.hintEn : exercise.hint}
+              </p>
             </div>
           )}
         </div>
@@ -120,7 +123,7 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
         {/* MCQ exercise */}
         {exercise.type === 'mcq' && exercise.options && (
           <div className="space-y-2">
-            {exercise.options.map((opt, i) => {
+            {(isEn && exercise.optionsEn ? exercise.optionsEn : exercise.options).map((opt, i) => {
               const isSelected = selectedMcq === i;
               const isCorrect  = i === exercise.correctIndex;
               let cls = 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/30';
@@ -137,7 +140,7 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
                   onClick={() => { if (!mcqSubmitted) setSelectedMcq(i); }}
                   disabled={mcqSubmitted}
                   className={`w-full text-start px-4 py-2.5 rounded-lg border transition-all text-sm flex items-center gap-3 ${cls}`}
-                  dir="rtl"
+                  dir={isEn && exercise.optionsEn ? 'ltr' : 'rtl'}
                 >
                   <span className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center text-xs font-bold ${
                     mcqSubmitted && isCorrect  ? 'border-emerald-500 text-emerald-500' :

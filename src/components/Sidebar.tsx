@@ -212,8 +212,8 @@ export function Sidebar({
                           : isDone
                           ? 'text-gray-400 dark:text-gray-400'
                           : 'text-gray-700 dark:text-gray-300'
-                      }`} dir="rtl">
-                        {lesson.title}
+                      }`} dir={lang === 'en' && lesson.titleEn ? 'ltr' : 'rtl'}>
+                        {lang === 'en' && lesson.titleEn ? lesson.titleEn : lesson.title}
                       </span>
                       <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
                         lesson.type === 'formula' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' :

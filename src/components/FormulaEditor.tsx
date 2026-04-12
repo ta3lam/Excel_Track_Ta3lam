@@ -42,7 +42,9 @@ function getResultDisplay(value: FormulaResult, errorMap: Record<string, string>
 }
 
 export function FormulaEditor({ sheet, initialFormula = '', onResult }: FormulaEditorProps) {
-  const { t } = useAppContext();
+  const { t, lang } = useAppContext();
+  const isEn = lang === 'en';
+  const displayHeaders = (isEn && sheet.headersEn) ? sheet.headersEn : sheet.headers;
   const errorMap = useExcelErrorMap();
 
   const [formula, setFormula] = useState(initialFormula);
@@ -89,7 +91,7 @@ export function FormulaEditor({ sheet, initialFormula = '', onResult }: FormulaE
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-800/80">
                 <th className="w-8 px-2 py-1.5 text-center text-gray-400 border-b border-r border-gray-200 dark:border-gray-700 font-normal">#</th>
-                {sheet.headers.map((_, i) => (
+                {displayHeaders.map((_, i) => (
                   <th key={i} className="px-3 py-1.5 text-center text-gray-500 dark:text-gray-400 border-b border-r border-gray-200 dark:border-gray-700 font-semibold">
                     {colLetters[i]}
                   </th>
@@ -99,7 +101,7 @@ export function FormulaEditor({ sheet, initialFormula = '', onResult }: FormulaE
             <tbody>
               <tr className="bg-gray-50/50 dark:bg-gray-800/40">
                 <td className="px-2 py-1.5 text-center text-gray-400 border-b border-r border-gray-200/70 dark:border-gray-700/50 font-mono">1</td>
-                {sheet.headers.map((h, i) => (
+                {displayHeaders.map((h, i) => (
                   <td key={i} className="px-3 py-1.5 text-center text-amber-600 dark:text-amber-300 font-medium border-b border-r border-gray-200/70 dark:border-gray-700/50">
                     {h}
                   </td>
