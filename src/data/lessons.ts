@@ -6,8 +6,12 @@ import { lessonsAdvanced } from './lessons_advanced';
 import { lessonsPowerQuery } from './lessons_powerquery';
 import { lessonsExpert } from './lessons_expert';
 import { lessonsPro } from './lessons_pro';
+import { businessCaseLessons, businessCaseSections } from './cases';
+import { capstoneLessons } from './cases/capstones';
+import { gapLessons } from './lessons_gap';
+import { aiLessons } from './lessons_ai';
 
-export const allLessons: Lesson[] = [
+const lessonPool: Lesson[] = [
   ...lessonsZero,
   ...lessonsBeginner,
   ...lessonsLookup,
@@ -15,6 +19,10 @@ export const allLessons: Lesson[] = [
   ...lessonsPowerQuery,
   ...lessonsExpert,
   ...lessonsPro,
+  ...businessCaseLessons,
+  ...capstoneLessons,
+  ...gapLessons,
+  ...aiLessons,
 ];
 
 export const LEVEL_GROUPS: LevelGroup[] = [
@@ -37,14 +45,14 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'البحث والمرجع',
     labelSub: 'Lookup & Reference',
     color: 'blue',
-    lessonIds: [21, 22, 23, 24, 25, 26, 27],
+    lessonIds: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
   },
   {
     id: 'advanced',
     label: 'المستوى المتقدم',
     labelSub: 'Advanced Excel',
     color: 'violet',
-    lessonIds: [31, 32, 33, 34, 35, 36, 37],
+    lessonIds: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 70, 71, 72, 73, 74, 75, 76, 77, 78],
   },
   {
     id: 'powerquery',
@@ -58,7 +66,7 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     label: 'DAX والـ Data Model',
     labelSub: 'Data Model & DAX',
     color: 'red',
-    lessonIds: [51, 52, 53, 54, 55, 56, 57, 58],
+    lessonIds: [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 69],
   },
   {
     id: 'pro',
@@ -67,7 +75,41 @@ export const LEVEL_GROUPS: LevelGroup[] = [
     color: 'amber',
     lessonIds: [61, 62, 63, 64, 65, 66],
   },
+  {
+    id: 'cases',
+    label: 'حالات بيزنس عملية',
+    labelSub: 'Business cases',
+    color: 'teal',
+    lessonIds: [
+      ...businessCaseSections.flatMap(section => section.lessonIds),
+      ...capstoneLessons.map(lesson => lesson.id),
+    ],
+    sections: [
+      ...businessCaseSections,
+      {
+        id: 'capstones',
+        label: 'مشاريع ختامية',
+        labelEn: 'Capstones',
+        lessonIds: capstoneLessons.map(lesson => lesson.id),
+      },
+    ],
+  },
+  {
+    id: 'ai',
+    label: 'Excel + AI',
+    labelSub: 'Excel + AI',
+    color: 'fuchsia',
+    lessonIds: aiLessons.map(lesson => lesson.id),
+  },
 ];
+
+const byId = new Map(lessonPool.map(lesson => [lesson.id, lesson]));
+
+export const allLessons: Lesson[] = LEVEL_GROUPS.flatMap(group => group.lessonIds.map(id => {
+  const lesson = byId.get(id);
+  if (!lesson) throw new Error(`Missing lesson ${id}`);
+  return lesson;
+}));
 
 export const LEVEL_COLORS: Record<string, { bg: string; text: string; border: string; badge: string }> = {
   slate:   { bg: 'bg-slate-500/10',   text: 'text-slate-400',   border: 'border-slate-500/30',   badge: 'bg-slate-500/20 text-slate-300' },
@@ -77,4 +119,6 @@ export const LEVEL_COLORS: Record<string, { bg: string; text: string; border: st
   orange:  { bg: 'bg-orange-500/10',  text: 'text-orange-400',  border: 'border-orange-500/30',  badge: 'bg-orange-500/20 text-orange-300' },
   red:     { bg: 'bg-red-500/10',     text: 'text-red-400',     border: 'border-red-500/30',     badge: 'bg-red-500/20 text-red-300' },
   amber:   { bg: 'bg-amber-500/10',   text: 'text-amber-400',   border: 'border-amber-500/30',   badge: 'bg-amber-500/20 text-amber-300' },
+  teal:    { bg: 'bg-teal-500/10',    text: 'text-teal-400',    border: 'border-teal-500/30',    badge: 'bg-teal-500/20 text-teal-300' },
+  fuchsia: { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-400', border: 'border-fuchsia-500/30', badge: 'bg-fuchsia-500/20 text-fuchsia-300' },
 };

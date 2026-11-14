@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Exercise, FormulaResult } from '../types';
-import { FormulaEditor, evaluateFormula } from './FormulaEditor';
+import { FormulaEditor } from './FormulaEditor';
 import { useAppContext } from '../contexts/AppContext';
 
 interface ExercisePanelProps {
@@ -17,10 +17,13 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
   const [wrong, setWrong]               = useState(false);
   const [selectedMcq, setSelectedMcq]   = useState<number | null>(null);
   const [mcqSubmitted, setMcqSubmitted] = useState(false);
+  const [showSolution, setShowSolution] = useState(false);
+  const [promptCopied, setPromptCopied] = useState(false);
 
   useEffect(() => {
     setCurrent(0); setResults({}); setShowHint(false);
     setWrong(false); setSelectedMcq(null); setMcqSubmitted(false);
+    setShowSolution(false); setPromptCopied(false);
   }, [exercises]);
 
   const exercise = exercises[current];
@@ -55,7 +58,10 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
     }
   }, [selectedMcq, exercise, markDone]);
 
-  const reset = () => { setShowHint(false); setWrong(false); setSelectedMcq(null); setMcqSubmitted(false); };
+  const reset = () => {
+    setShowHint(false); setWrong(false); setSelectedMcq(null); setMcqSubmitted(false);
+    setShowSolution(false); setPromptCopied(false);
+  };
   const goNext = () => { if (current < exercises.length - 1) { setCurrent(c => c + 1); reset(); } };
   const goPrev = () => { if (current > 0) { setCurrent(c => c - 1); reset(); } };
 
@@ -111,6 +117,43 @@ export function ExercisePanel({ exercises, onAllComplete }: ExercisePanelProps) 
               <p className="text-indigo-600 dark:text-indigo-300 text-xs font-mono" dir={isEn && exercise.hintEn ? 'ltr' : 'rtl'}>
                 💡 {isEn && exercise.hintEn ? exercise.hintEn : exercise.hint}
               </p>
+            </div>
+          )}
+          {(exercise.prompt || exercise.promptEn) && (
+            <button
+              onClick={() => {
+                const text = isEn && exercise.promptEn ? exercise.promptEn : (exercise.prompt ?? exercise.promptEn ?? '');
+                navigator.clipboard.writeText(text).then(() => {
+                  setPromptCopied(true);
+                  setTimeout(() => setPromptCopied(false), 2000);
+                });
+              }}
+              className="mt-2 text-xs text-fuchsia-600 dark:text-fuchsia-300 hover:text-fuchsia-500 flex items-center gap-1.5 transition-colors"
+            >
+              {promptCopied ? t.copied : t.copyPrompt}
+            </button>
+          )}
+          {exercise.solutionFormula && (
+            <div className="mt-2">
+              <button
+                onClick={() => setShowSolution(v => !v)}
+                className="text-xs text-amber-600 dark:text-amber-300 hover:text-amber-500"
+              >
+                {showSolution ? t.hideSolution : t.showSolution}
+              </button>
+              {showSolution && (
+                <div className="mt-2 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 space-y-2">
+                  <pre className="text-xs font-mono text-amber-800 dark:text-amber-200 overflow-x-auto whitespace-pre-wrap" dir="ltr">
+                    {exercise.solutionFormula}
+                  </pre>
+                  {exercise.expected != null && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      {t.expectedResult}{' '}
+                      <bdi dir="ltr" className="font-mono font-semibold">{String(exercise.expected)}</bdi>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

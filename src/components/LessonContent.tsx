@@ -4,6 +4,7 @@ import { Lesson } from '../types';
 import { ReactNode, useState, useCallback } from 'react';
 import { LEVEL_GROUPS, LEVEL_COLORS } from '../data/lessons';
 import { useAppContext } from '../contexts/AppContext';
+import { renderBidi } from '../utils/bidi';
 
 function CodeBlock({ code, lang }: { code: string; lang?: string }) {
   const { t } = useAppContext();
@@ -52,6 +53,7 @@ export function LessonContent({ lesson }: LessonContentProps) {
   const description = (isEn && lesson.descriptionEn) ? lesson.descriptionEn : lesson.description;
   const content     = (isEn && lesson.contentEn)     ? lesson.contentEn     : lesson.content;
   const contentDir  = isEn ? 'ltr' : 'rtl';
+  const bidi = (children?: ReactNode) => (isEn ? children : renderBidi(children));
 
   return (
     <div className="space-y-0">
@@ -64,8 +66,31 @@ export function LessonContent({ lesson }: LessonContentProps) {
                 {levelLabel}
               </span>
             )}
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title}</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{description}</p>
+            {lesson.tags && lesson.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {lesson.tags.map(tag => (
+                  <span key={tag.label} className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                    {isEn && tag.labelEn ? tag.labelEn : tag.label}
+                  </span>
+                ))}
+              </div>
+            )}
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{bidi(title)}</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{bidi(description)}</p>
+            {lesson.resources && lesson.resources.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {lesson.resources.map(link => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    download
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    {isEn && link.labelEn ? link.labelEn : link.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
           <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border ${colors.border} ${colors.text}`}>
             {lesson.type === 'formula' ? 'fx' : lesson.type === 'code' ? '</>' : '📖'}
@@ -81,14 +106,14 @@ export function LessonContent({ lesson }: LessonContentProps) {
             h2: ({ children }: { children?: ReactNode }) => (
               <h2 className="text-base font-bold text-gray-900 dark:text-white mt-6 mb-3 flex items-center gap-2 first:mt-0">
                 <span className="w-1 h-4 bg-emerald-500 rounded-full flex-shrink-0" />
-                {children}
+                {bidi(children)}
               </h2>
             ),
             h3: ({ children }: { children?: ReactNode }) => (
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-4 mb-2">{children}</h3>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-4 mb-2">{bidi(children)}</h3>
             ),
             p: ({ children }: { children?: ReactNode }) => (
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-3">{children}</p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-3">{bidi(children)}</p>
             ),
             code: ({ className, children }: { className?: string; children?: ReactNode }) => {
               const match = /language-(\w+)/.exec(className || '');
@@ -107,7 +132,7 @@ export function LessonContent({ lesson }: LessonContentProps) {
               <ol className="list-decimal list-outside me-5 space-y-1.5 text-gray-600 dark:text-gray-300 text-sm mb-3">{children}</ol>
             ),
             li: ({ children }: { children?: ReactNode }) => (
-              <li className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{children}</li>
+              <li className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{bidi(children)}</li>
             ),
             table: ({ children }: { children?: ReactNode }) => (
               <div className="overflow-x-auto my-4 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -124,19 +149,19 @@ export function LessonContent({ lesson }: LessonContentProps) {
               <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors">{children}</tr>
             ),
             th: ({ children }: { children?: ReactNode }) => (
-              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600 whitespace-nowrap">
-                {children}
+              <th className="px-3 py-2 text-start text-xs font-semibold text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600 whitespace-nowrap">
+                {bidi(children)}
               </th>
             ),
             td: ({ children }: { children?: ReactNode }) => (
-              <td className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-700/50">{children}</td>
+              <td className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-700/50">{bidi(children)}</td>
             ),
             strong: ({ children }: { children?: ReactNode }) => (
-              <strong className="font-semibold text-gray-800 dark:text-gray-100">{children}</strong>
+              <strong className="font-semibold text-gray-800 dark:text-gray-100">{bidi(children)}</strong>
             ),
             blockquote: ({ children }: { children?: ReactNode }) => (
               <blockquote className="border-s-4 border-emerald-500 ps-4 my-3 bg-emerald-500/5 py-2 pe-3 rounded-e-lg text-emerald-700 dark:text-emerald-200 text-sm">
-                {children}
+                {bidi(children)}
               </blockquote>
             ),
             hr: () => <hr className="border-gray-200 dark:border-gray-700 my-5" />,

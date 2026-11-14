@@ -9,6 +9,11 @@ import { useAppContext } from './contexts/AppContext';
 
 const WELCOMED_KEY = 'excel-mastery-welcomed';
 
+function lessonFromUrl(): number | null {
+  const id = Number(new URLSearchParams(window.location.search).get('lesson'));
+  return allLessons.some(lesson => lesson.id === id) ? id : null;
+}
+
 function NavArrow({ direction, onClick, disabled }: {
   direction: 'prev' | 'next';
   onClick: () => void;
@@ -46,10 +51,11 @@ function NavArrow({ direction, onClick, disabled }: {
 export default function App() {
   const { t, isRTL, isDark, toggleLang, toggleTheme, lang } = useAppContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentLessonId, setCurrentLessonId] = useState<number>(allLessons[0]?.id ?? 1);
+  const linkedLesson = lessonFromUrl();
+  const [currentLessonId, setCurrentLessonId] = useState<number>(linkedLesson ?? allLessons[0]?.id ?? 1);
   const [mobileTab, setMobileTab] = useState<'content' | 'exercises'>('content');
   const [showWelcome, setShowWelcome] = useState<boolean>(
-    () => !localStorage.getItem(WELCOMED_KEY)
+    () => !linkedLesson && !localStorage.getItem(WELCOMED_KEY)
   );
 
   const { completed, markComplete, resetProgress } = useProgress();
@@ -58,6 +64,14 @@ export default function App() {
   const currentLesson = allLessons[currentIndex];
 
   useEffect(() => { setMobileTab('content'); }, [currentLessonId]);
+
+  useEffect(() => {
+    if (showWelcome) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('lesson') === String(currentLessonId)) return;
+    url.searchParams.set('lesson', String(currentLessonId));
+    window.history.replaceState(null, '', url);
+  }, [currentLessonId, showWelcome]);
 
   const goNext = useCallback(() => {
     if (currentIndex < allLessons.length - 1)
