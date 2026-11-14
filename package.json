@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "workbook": "tsx scripts/create-workbook.ts"
+    "workbook": "tsx scripts/create-workbook.ts",
+    "verify": "tsx scripts/verify-formulas.ts"
   },
   "dependencies": {
     "@codemirror/lang-sql": "^6.10.0",

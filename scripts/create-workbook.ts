@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { allLessons, LEVEL_GROUPS } from '../src/data/lessons.js';
@@ -16,6 +17,8 @@ const LEVEL_BG: Record<string, string> = {
   orange:  'FFFFEDD5',
   red:     'FFFEE2E2',
   amber:   'FFFEF3C7',
+  teal:    'FFCCFBF1',
+  fuchsia: 'FFFAE8FF',
 };
 const LEVEL_FONT: Record<string, string> = {
   slate:   'FF475569',
@@ -25,6 +28,8 @@ const LEVEL_FONT: Record<string, string> = {
   orange:  'FF9A3412',
   red:     'FF991B1B',
   amber:   'FF92400E',
+  teal:    'FF0F766E',
+  fuchsia: 'FFA21CAF',
 };
 const ANSWER_BG  = 'FFFFFF99'; // خلية الإجابة
 const HEADER_BG  = 'FF1E293B'; // رأس الجداول
@@ -33,7 +38,7 @@ const SECTION_BG = 'FFF8FAFC'; // رأس القسم
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function sheetName(lesson: Lesson): string {
-  return `${lesson.id}. ${lesson.title}`.slice(0, 31);
+  return `${lesson.id}. ${lesson.title}`.replace(/[*?:\\/[\]]/g, ' ').slice(0, 31);
 }
 
 function getLevelColor(lesson: Lesson) {
@@ -339,6 +344,179 @@ function buildLessonSheet(wb: ExcelJS.Workbook, lesson: Lesson) {
   backCell.alignment = { horizontal: 'right', readingOrder: 'rightToLeft' };
 }
 
+function writeRaw(
+  sheet: ExcelJS.Worksheet,
+  row: number,
+  col: number,
+  value: string | number | null,
+  options: Parameters<typeof cell>[4] = {},
+) {
+  if (typeof value === 'string' && value.startsWith("'")) {
+    cell(sheet, row, col, value.slice(1), options);
+    sheet.getCell(row, col).numFmt = '@';
+    return;
+  }
+  cell(sheet, row, col, value, options);
+}
+
+function qualifyFormula(formula: string, sheetName: string): string {
+  return formula.replace(
+    /(\$?[A-Z]{1,3}\$?\d+(?::\$?[A-Z]{1,3}\$?\d+)?)/g,
+    `${sheetName}!$1`,
+  );
+}
+
+/** Case and capstone sheets keep row 1 as the header so A1 formulas match the app. */
+function buildDatasetSheet(wb: ExcelJS.Workbook, lesson: Lesson) {
+  const name = sheetName(lesson);
+  const sheet = wb.addWorksheet(name, { views: [{ rightToLeft: true }] });
+  const data = lesson.sheet;
+  if (!data) return;
+  const width = Math.max(data.headers.length, 6);
+  sheet.columns = Array.from({ length: Math.max(width, 12) }, (_, index) => ({
+    width: index === 0 ? 28 : 18,
+  }));
+
+  data.headers.forEach((header, index) => {
+    cell(sheet, 1, index + 1, header, {
+      bold: true, bg: HEADER_BG, fontColor: 'FFFFFFFF', align: 'center', border: true,
+    });
+  });
+  sheet.getRow(1).height = 22;
+
+  data.rows.forEach((row, rowIndex) => {
+    row.forEach((value, colIndex) => {
+      const isNum = typeof value === 'number';
+      writeRaw(sheet, rowIndex + 2, colIndex + 1, value, {
+        align: isNum ? 'center' : 'right',
+        fontColor: isNum ? 'FF059669' : 'FF1E293B',
+        border: true,
+      });
+    });
+    sheet.getRow(rowIndex + 2).height = 20;
+  });
+
+  let r = data.rows.length + 3;
+  lesson.exercises.forEach((ex, idx) => {
+    sheet.mergeCells(r, 1, r, 6);
+    cell(sheet, r, 1, `س${idx + 1}: ${ex.question}`, {
+      bold: true, bg: 'FFF0F9FF', fontColor: 'FF0C4A6E', wrap: true,
+    });
+    sheet.getRow(r).height = 32;
+    r++;
+    sheet.mergeCells(r, 1, r, 6);
+    cell(sheet, r, 1, `💡 تلميح: ${ex.hint}`, {
+      italic: true, bg: HINT_BG, fontColor: 'FF3730A3', wrap: true, fontSize: 10,
+    });
+    r++;
+    cell(sheet, r, 1, ex.type === 'formula' ? 'اكتب الصيغة:' : 'إجابتك:', { bold: true, fontColor: 'FF475569' });
+    const ans = sheet.getCell(r, 2);
+    if (ex.type === 'formula') ans.value = '=';
+    ans.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ANSWER_BG } };
+    ans.font = { name: 'Courier New', size: 11, color: { argb: 'FF92400E' } };
+    ans.alignment = { horizontal: 'left', readingOrder: 'leftToRight' };
+    ans.border = {
+      top: { style: 'medium', color: { argb: 'FFF59E0B' } },
+      left: { style: 'medium', color: { argb: 'FFF59E0B' } },
+      bottom: { style: 'medium', color: { argb: 'FFF59E0B' } },
+      right: { style: 'medium', color: { argb: 'FFF59E0B' } },
+    };
+    if (ex.solutionFormula) {
+      cell(sheet, r, 12, ex.solutionFormula, {
+        fontColor: 'FF92400E', align: 'left',
+      });
+      sheet.getCell(r, 12).alignment = { horizontal: 'left', readingOrder: 'leftToRight' };
+    }
+    sheet.getRow(r).height = 22;
+    r += 2;
+  });
+
+  cell(sheet, 1, 12, 'حل المدرب', {
+    bold: true, bg: 'FFFEF3C7', fontColor: 'FF92400E', align: 'center', border: true,
+  });
+}
+
+function dataOnlySheet(wb: ExcelJS.Workbook, lesson: Lesson, name: string) {
+  const sheet = wb.addWorksheet(name, { views: [{ rightToLeft: true }] });
+  const data = lesson.sheet;
+  if (!data) return sheet;
+  data.headers.forEach((header, index) => {
+    cell(sheet, 1, index + 1, header, {
+      bold: true, bg: HEADER_BG, fontColor: 'FFFFFFFF', align: 'center', border: true,
+    });
+  });
+  data.rows.forEach((row, rowIndex) => {
+    row.forEach((value, colIndex) => {
+      writeRaw(sheet, rowIndex + 2, colIndex + 1, value, {
+        border: true,
+        align: typeof value === 'number' ? 'center' : 'right',
+      });
+    });
+  });
+  sheet.columns = data.headers.map(header => ({ width: Math.max(16, header.length + 4) }));
+  return sheet;
+}
+
+async function writeResourceWorkbooks() {
+  const publicDir = join(__dirname, '../public');
+  for (const lesson of allLessons) {
+    if (!lesson.resources?.length || !lesson.sheet) continue;
+    for (const resource of lesson.resources) {
+      const target = join(publicDir, resource.href);
+      mkdirSync(dirname(target), { recursive: true });
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'Ta3laM';
+      wb.title = lesson.title;
+      const solution = resource.href.includes('capstones/');
+      if (solution) {
+        dataOnlySheet(wb, lesson, 'البيانات');
+        const sol = wb.addWorksheet('الحل', { views: [{ rightToLeft: true }] });
+        sol.columns = [{ width: 70 }, { width: 80 }];
+        cell(sol, 1, 1, 'السؤال', { bold: true, bg: HEADER_BG, fontColor: 'FFFFFFFF' });
+        cell(sol, 1, 2, 'الصيغة', { bold: true, bg: HEADER_BG, fontColor: 'FFFFFFFF' });
+        let row = 2;
+        for (const ex of lesson.exercises) {
+          cell(sol, row, 1, ex.question, { wrap: true });
+          sol.getRow(row).height = 32;
+          if (ex.solutionFormula) {
+            const formula = qualifyFormula(ex.solutionFormula, 'البيانات');
+            const c = sol.getCell(row, 2);
+            c.value = { formula: formula.slice(1), result: ex.expected ?? undefined };
+            c.font = { name: 'Courier New', size: 11, color: { argb: 'FF92400E' } };
+            c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ANSWER_BG } };
+          }
+          row++;
+        }
+      } else {
+        dataOnlySheet(wb, lesson, 'البيانات');
+        const q = wb.addWorksheet('الأسئلة', { views: [{ rightToLeft: true }] });
+        q.columns = [{ width: 18 }, { width: 80 }];
+        let row = 1;
+        lesson.exercises.forEach((ex, index) => {
+          cell(q, row, 1, `س${index + 1}`, { bold: true, bg: 'FFF0F9FF', fontColor: 'FF0C4A6E' });
+          cell(q, row, 2, ex.question, { wrap: true });
+          q.getRow(row).height = 30;
+          row++;
+          cell(q, row, 1, 'تلميح', { italic: true, bg: HINT_BG, fontColor: 'FF3730A3' });
+          cell(q, row, 2, ex.hint, { italic: true, wrap: true });
+          row++;
+          cell(q, row, 1, 'إجابتك', { bold: true });
+          const ans = q.getCell(row, 2);
+          ans.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ANSWER_BG } };
+          ans.border = {
+            top: { style: 'medium', color: { argb: 'FFF59E0B' } },
+            left: { style: 'medium', color: { argb: 'FFF59E0B' } },
+            bottom: { style: 'medium', color: { argb: 'FFF59E0B' } },
+            right: { style: 'medium', color: { argb: 'FFF59E0B' } },
+          };
+          row += 2;
+        });
+      }
+      await wb.xlsx.writeFile(target);
+    }
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 async function main() {
   const wb = new ExcelJS.Workbook();
@@ -352,7 +530,8 @@ async function main() {
 
   console.log(`📄 Building ${allLessons.length} lesson sheets...`);
   for (const lesson of allLessons) {
-    buildLessonSheet(wb, lesson);
+    if (lesson.sheetLayout === 'dataset') buildDatasetSheet(wb, lesson);
+    else buildLessonSheet(wb, lesson);
     process.stdout.write(`  ✓ ${lesson.id}. ${lesson.title}\n`);
   }
 
@@ -360,6 +539,9 @@ async function main() {
   await wb.xlsx.writeFile(outputPath);
   console.log(`\n✅ Done! → public/excel-exercises.xlsx`);
   console.log(`   Sheets: ${allLessons.length + 1} (index + lessons)`);
+  console.log('📁 Writing per-case workbooks...');
+  await writeResourceWorkbooks();
+  console.log('✅ Case and capstone files written');
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

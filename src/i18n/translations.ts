@@ -36,6 +36,10 @@ export interface Translations {
   confirmAnswer: string;
   correctAnswer: string;
   wrongFormula: string;
+  showSolution: string;
+  hideSolution: string;
+  expectedResult: string;
+  copyPrompt: string;
   // FormulaEditor
   referenceData: string;
   formulaBar: string;
@@ -109,6 +113,10 @@ export const translations: Record<Lang, Translations> = {
     confirmAnswer: 'تأكيد الإجابة',
     correctAnswer: 'إجابة صحيحة! 🎉',
     wrongFormula: 'النتيجة غير صحيحة — راجع الصيغة وحاول مجدداً',
+    showSolution: 'إظهار الصيغة المتوقعة',
+    hideSolution: 'إخفاء الصيغة',
+    expectedResult: 'النتيجة المتوقعة:',
+    copyPrompt: 'انسخ الـ prompt',
 
     referenceData: 'البيانات المرجعية',
     formulaBar: 'شريط الصيغة',
@@ -132,7 +140,7 @@ export const translations: Record<Lang, Translations> = {
     statLessons: 'درس تفاعلي',
     statLevels: 'مستويات',
     statExercises: 'تمرين',
-    sevenLevels: 'المستويات السبعة',
+    sevenLevels: 'المستويات',
     howItWorks: 'كيف يعمل التطبيق؟',
     howStep1: 'اقرأ الدرس واستوعب المفهوم بشكل كامل',
     howStep2: 'جرّب الصيغ بنفسك في المحرر التفاعلي المدمج',
@@ -179,6 +187,10 @@ export const translations: Record<Lang, Translations> = {
     confirmAnswer: 'Confirm Answer',
     correctAnswer: 'Correct! 🎉',
     wrongFormula: 'Incorrect result — check your formula and try again',
+    showSolution: 'Show expected formula',
+    hideSolution: 'Hide formula',
+    expectedResult: 'Expected result:',
+    copyPrompt: 'Copy prompt',
 
     referenceData: 'Reference Data',
     formulaBar: 'Formula Bar',
@@ -202,7 +214,7 @@ export const translations: Record<Lang, Translations> = {
     statLessons: 'interactive lessons',
     statLevels: 'levels',
     statExercises: 'exercises',
-    sevenLevels: 'The Seven Levels',
+    sevenLevels: 'Levels',
     howItWorks: 'How does it work?',
     howStep1: 'Read each lesson and absorb the concept fully',
     howStep2: 'Try formulas yourself in the built-in interactive editor',

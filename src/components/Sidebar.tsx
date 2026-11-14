@@ -12,6 +12,8 @@ const LEVEL_PROGRESS_BAR: Record<string, string> = {
   orange:  'bg-orange-500',
   red:     'bg-red-500',
   amber:   'bg-amber-500',
+  teal:    'bg-teal-500',
+  fuchsia: 'bg-fuchsia-500',
 };
 
 interface SidebarProps {
@@ -153,9 +155,12 @@ export function Sidebar({
               .map(id => lessons.find(l => l.id === id))
               .filter(Boolean) as Lesson[];
 
-            const filteredLessons = query
-              ? groupLessons.filter(l => l.title.toLowerCase().includes(query))
-              : groupLessons;
+            const matchesQuery = (lesson: Lesson) => {
+              if (!query) return true;
+              const bag = `${lesson.title} ${lesson.titleEn ?? ''} ${lesson.description} ${lesson.descriptionEn ?? ''}`.toLowerCase();
+              return bag.includes(query);
+            };
+            const filteredLessons = groupLessons.filter(matchesQuery);
 
             if (!filteredLessons.length) return null;
 
@@ -187,42 +192,58 @@ export function Sidebar({
                   )}
                 </div>
 
-                {/* Lessons */}
-                {filteredLessons.map((lesson) => {
-                  const isActive = lesson.id === currentLessonId;
-                  const isDone = completed.includes(lesson.id);
-
+                {/* Lessons, grouped when the level has business sections */}
+                {(group.sections ?? [{ id: group.id, label: '', labelEn: '', lessonIds: group.lessonIds }]).map(section => {
+                  const sectionLessons = section.lessonIds
+                    .map(id => filteredLessons.find(l => l.id === id))
+                    .filter(Boolean) as Lesson[];
+                  if (!sectionLessons.length) return null;
+                  const sectionLabel = lang === 'ar' ? section.label : section.labelEn;
                   return (
-                    <button
-                      key={lesson.id}
-                      onClick={() => { onSelectLesson(lesson.id); onClose(); }}
-                      title={lesson.title}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-start transition-colors border-e-2 ${
-                        isActive
-                          ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 border-transparent'
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        isDone ? 'bg-emerald-500' : isActive ? 'bg-emerald-400' : 'bg-gray-300 dark:bg-gray-600'
-                      }`} />
-                      <span className={`flex-1 text-sm leading-snug truncate text-start ${
-                        isActive
-                          ? 'text-emerald-700 dark:text-emerald-300 font-medium'
-                          : isDone
-                          ? 'text-gray-400 dark:text-gray-400'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`} dir={lang === 'en' && lesson.titleEn ? 'ltr' : 'rtl'}>
-                        {lang === 'en' && lesson.titleEn ? lesson.titleEn : lesson.title}
-                      </span>
-                      <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
-                        lesson.type === 'formula' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
-                        lesson.type === 'code'    ? 'bg-blue-500/20 text-blue-700 dark:text-blue-400' :
-                        'bg-gray-200 dark:bg-gray-600/40 text-gray-500 dark:text-gray-400'
-                      }`}>
-                        {lesson.type === 'formula' ? 'fx' : lesson.type === 'code' ? '</>' : '📖'}
-                      </span>
-                    </button>
+                    <div key={section.id}>
+                      {sectionLabel && (
+                        <div className="px-3 pt-2 pb-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
+                          {sectionLabel}
+                        </div>
+                      )}
+                      {sectionLessons.map((lesson) => {
+                        const isActive = lesson.id === currentLessonId;
+                        const isDone = completed.includes(lesson.id);
+                        const title = lang === 'en' && lesson.titleEn ? lesson.titleEn : lesson.title;
+                        return (
+                          <button
+                            key={lesson.id}
+                            onClick={() => { onSelectLesson(lesson.id); onClose(); }}
+                            title={title}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 text-start transition-colors border-e-2 ${
+                              isActive
+                                ? 'bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500'
+                                : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 border-transparent'
+                            }`}
+                          >
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                              isDone ? 'bg-emerald-500' : isActive ? 'bg-emerald-400' : 'bg-gray-300 dark:bg-gray-600'
+                            }`} />
+                            <span className={`flex-1 text-sm leading-snug truncate text-start ${
+                              isActive
+                                ? 'text-emerald-700 dark:text-emerald-300 font-medium'
+                                : isDone
+                                ? 'text-gray-400 dark:text-gray-400'
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`} dir={lang === 'en' && lesson.titleEn ? 'ltr' : 'rtl'}>
+                              {title}
+                            </span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
+                              lesson.type === 'formula' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' :
+                              lesson.type === 'code'    ? 'bg-blue-500/20 text-blue-700 dark:text-blue-400' :
+                              'bg-gray-200 dark:bg-gray-600/40 text-gray-500 dark:text-gray-400'
+                            }`}>
+                              {lesson.type === 'formula' ? 'fx' : lesson.type === 'code' ? '</>' : '📖'}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   );
                 })}
               </div>
@@ -233,7 +254,7 @@ export function Sidebar({
             !g.lessonIds
               .map(id => lessons.find(l => l.id === id))
               .filter(Boolean)
-              .some(l => l!.title.toLowerCase().includes(query))
+              .some(l => `${l!.title} ${l!.titleEn ?? ''} ${l!.description}`.toLowerCase().includes(query))
           ) && (
             <div className="px-4 py-8 text-center text-sm text-gray-400">
               {t.noResults(searchQuery)}

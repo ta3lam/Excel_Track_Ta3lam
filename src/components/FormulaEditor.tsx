@@ -1,22 +1,14 @@
 import { useState, useCallback } from 'react';
-import HyperFormula from 'hyperformula';
 import { SheetData, FormulaResult } from '../types';
 import { useAppContext } from '../contexts/AppContext';
+import { displayCell, evaluateFormula, isStoredAsText } from '../utils/formulaEval';
+
+export { evaluateFormula } from '../utils/formulaEval';
 
 interface FormulaEditorProps {
   sheet: SheetData;
   initialFormula?: string;
   onResult?: (result: FormulaResult, formula: string) => void;
-}
-
-export function evaluateFormula(formula: string, sheet: SheetData): FormulaResult {
-  const allData: (string | number | null)[][] = [sheet.headers, ...sheet.rows];
-  const hf = HyperFormula.buildFromArray(allData, { licenseKey: 'gpl-v3' });
-  const answerRow = allData.length;
-  hf.setCellContents({ sheet: 0, row: answerRow, col: 0 }, [[formula]]);
-  const result = hf.getCellValue({ sheet: 0, row: answerRow, col: 0 });
-  hf.destroy();
-  return result as FormulaResult;
 }
 
 function useExcelErrorMap() {
@@ -113,10 +105,14 @@ export function FormulaEditor({ sheet, initialFormula = '', onResult }: FormulaE
                   {row.map((cell, ci) => (
                     <td key={ci} className={`px-3 py-1.5 text-center border-b border-r border-gray-200/70 dark:border-gray-700/50 ${
                       cell === null ? 'text-gray-300 dark:text-gray-600 italic' :
+                      isStoredAsText(cell) ? 'text-amber-700 dark:text-amber-300 font-mono' :
                       typeof cell === 'number' ? 'text-emerald-600 dark:text-emerald-300 font-mono' :
                       'text-gray-700 dark:text-gray-200'
                     }`}>
-                      {cell === null ? '—' : String(cell)}
+                      {displayCell(cell)}
+                      {isStoredAsText(cell) && (
+                        <span className="ms-1 text-[10px] text-amber-500" title="Stored as text">T</span>
+                      )}
                     </td>
                   ))}
                 </tr>

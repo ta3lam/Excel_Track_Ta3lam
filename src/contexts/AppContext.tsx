@@ -27,6 +27,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { localStorage.setItem(LANG_KEY,  lang);  }, [lang]);
   useEffect(() => { localStorage.setItem(THEME_KEY, theme); }, [theme]);
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  }, [lang]);
 
   return (
     <AppContext.Provider value={{

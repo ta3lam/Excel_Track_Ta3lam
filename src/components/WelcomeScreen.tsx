@@ -1,4 +1,4 @@
-import { LEVEL_GROUPS, LEVEL_COLORS } from '../data/lessons';
+import { allLessons, LEVEL_GROUPS, LEVEL_COLORS } from '../data/lessons';
 import { useAppContext } from '../contexts/AppContext';
 import logo from '../assets/logo.png';
 
@@ -54,9 +54,9 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-10">
           {[
-            { value: '51', label: t.statLessons },
-            { value: '7',  label: t.statLevels },
-            { value: '100+', label: t.statExercises },
+            { value: String(allLessons.length), label: t.statLessons },
+            { value: String(LEVEL_GROUPS.length), label: t.statLevels },
+            { value: String(allLessons.reduce((sum, lesson) => sum + lesson.exercises.length, 0)), label: t.statExercises },
           ].map(s => (
             <div key={s.label} className="bg-white dark:bg-gray-800 rounded-xl p-4 text-center border border-gray-200 dark:border-gray-700">
               <div className="text-2xl font-bold text-emerald-500 mb-1">{s.value}</div>
