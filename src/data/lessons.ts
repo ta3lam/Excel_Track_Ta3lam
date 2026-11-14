@@ -9,6 +9,7 @@ import { lessonsPro } from './lessons_pro';
 import { businessCaseLessons, businessCaseSections } from './cases';
 import { capstoneLessons } from './cases/capstones';
 import { gapLessons } from './lessons_gap';
+import { aiLessons } from './lessons_ai';
 
 const lessonPool: Lesson[] = [
   ...lessonsZero,
@@ -21,6 +22,7 @@ const lessonPool: Lesson[] = [
   ...businessCaseLessons,
   ...capstoneLessons,
   ...gapLessons,
+  ...aiLessons,
 ];
 
 export const LEVEL_GROUPS: LevelGroup[] = [
@@ -91,6 +93,13 @@ export const LEVEL_GROUPS: LevelGroup[] = [
         lessonIds: capstoneLessons.map(lesson => lesson.id),
       },
     ],
+  },
+  {
+    id: 'ai',
+    label: 'Excel + AI',
+    labelSub: 'Excel + AI',
+    color: 'fuchsia',
+    lessonIds: aiLessons.map(lesson => lesson.id),
   },
 ];
 
